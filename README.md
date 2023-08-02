@@ -8,4 +8,7 @@ Provide an accelerator/quickstart/guidance/SoP/confidence to adopt AWS RDS for S
 - [x] Have Primitive validations in place for fail-fast/fast feedback
 - [x] Recommend sensible defaults
 - [x] User initiated backup/restore of database
+- [ ] Performance monitoring and alerting
+- [ ] Auditability (who did what, when)
+- [ ] Data Protection (at-rest and in-transit) 
 - [ ] Cost Estimation

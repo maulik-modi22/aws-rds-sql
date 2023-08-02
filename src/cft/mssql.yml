@@ -1,0 +1,269 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates an empty SQL Server RDS database as an example for automated deployments.
+Parameters:
+  VpcId:
+    Description: Existing VPC
+    Type: AWS::EC2::VPC::Id
+  SubnetId:
+    Description: Existing Subnets (Select At-least Two Subnets in different Availability zones irrespective of Single AZ or Multi AZ; Select Public Subnets ONLY for Public access)
+    Type: List<AWS::EC2::Subnet::Id>
+  WhiteListCIDR:
+    Type: String
+    Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/
+  BackupRestoreIAMServiceRole:
+    Type: String
+    Description: IAM Role with access to S3 full Access permision to perform backup/restore
+  InstanceName:
+    Description: RDS SQL Server Instance Name
+    Type: String
+    Default: SqlRdsDB
+    MinLength: '1'
+    MaxLength: '63'
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+  InstanceType:
+    Description: RDS SQL Server Instance Type, Consult https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.InstanceClasses and https://aws.amazon.com/rds/sqlserver/pricing/
+    Type: String
+    Default: db.m6i.large
+    AllowedValues:
+      - db.m6i.large
+      - db.r6i.large
+      - db.r5b.large
+      - db.t3.xlarge
+      - db.t3.small
+  MultiAZ:
+    Type: String
+    Default: false
+    AllowedValues:
+      - true
+      - false
+  StorageType:
+    Type: String
+    Default: gp3
+    AllowedValues:
+      - gp3
+      - io1
+      - io2
+    Description: Storage type
+  StorageSize:
+    Default: 30
+    Type: Number
+    Description: Storage Size In GB
+    MinValue: 30
+    MaxValue: 5000
+  StorageIOPS:
+    Default: 3000
+    Type: Number
+    Description: Storage IOPS
+    MinValue: 3000
+    MaxValue: 64000
+  StorageThroughput:
+    Type: Number
+    Default: "150"
+    Description: Storage Throughput, Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage
+    MinValue: 125
+    MaxValue: 1000
+  PubliclyAccessible:
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  Engine:
+    Type: String
+    Default: sqlserver-se
+    AllowedValues:
+    - sqlserver-se
+    - sqlserver-ex
+    - sqlserver-web
+    - sqlserver-ee
+  EngineMajorVersion:
+    Type: String
+    Default: '15.00'
+    AllowedValues:
+    - '15.00'
+  EngineVersion:
+    Type: String
+    Default: 15.00.4316.3.v1
+    Description: Select AWS RDS Engine Version
+  EngineFamily:
+    Type: String
+    Default: sqlserver-se-15.0
+    AllowedValues:
+    - sqlserver-ex-15.0 
+    - sqlserver-se-15.0
+    - sqlserver-ee-15.0
+    - sqlserver-web-15.0
+  DatabaseUsername:
+    AllowedPattern: "[a-zA-Z0-9]+"
+    ConstraintDescription: must contain only alphanumeric characters.
+    Description: The database admin account user name (must contain only alphanumeric characters)
+    Default: mssqladm1508dba
+    MaxLength: '16'
+    MinLength: '1'
+    Type: String
+  DatabasePassword:
+    AllowedPattern: "^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)"
+    ConstraintDescription: Must contain only alphanumeric characters with at least one capital letter and one number.
+    Description: The database admin account password. (Must contain only alphanumeric characters with at least one capital letter and one number.)
+    Default: GuessMe9999Not
+    MaxLength: '41'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Network Configuration"
+        Parameters: 
+          - VpcId
+          - PubliclyAccessible
+          - SubnetId
+          - WhiteListCIDR
+      - Label:
+          default: "Backup Restore Settings"
+        Parameters: 
+          - BackupRestoreIAMServiceRole
+      - 
+        Label: 
+          default: "Instance Configuration"
+        Parameters: 
+          - InstanceType
+          - InstanceName
+          - MultiAZ
+          - StorageType
+          - StorageSize
+          - StorageIOPS
+          - StorageThroughput
+      - Label: 
+          default: "SQL Server Configuration"
+        Parameters: 
+          - Engine
+          - EngineMajorVersion
+          - EngineVersion
+          - EngineFamily
+          - DatabaseUsername
+          - DatabasePassword
+Resources:
+  rdsDBSubnetGroup:
+  #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbsubnetgroup.html
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Creates DbSubnet group
+      DBSubnetGroupName: !Ref InstanceName
+      SubnetIds: !Ref SubnetId
+  rdsSecurityGroup:
+  #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SQL Server Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 1433
+        ToPort: 1433
+        CidrIp: !Ref WhiteListCIDR
+  rdsDBParameterGroup:
+    #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      DBParameterGroupName: !Ref InstanceName
+      Description: Db parameter group created using cloudformation template 
+      Family: !Ref EngineFamily
+      Parameters:
+        rds.force_ssl: 1
+  rdsOptionGroup:
+    #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-optiongroup.html
+    Type: AWS::RDS::OptionGroup
+    Properties:
+      OptionGroupName: !Ref InstanceName
+      EngineName: !Ref Engine
+      MajorEngineVersion: !Ref EngineMajorVersion
+      OptionGroupDescription: SQL Server Native Backup and Restore
+      OptionConfigurations:
+        - OptionName: SQLSERVER_BACKUP_RESTORE
+          OptionSettings:
+            - Name: IAM_ROLE_ARN
+              Value: !Ref BackupRestoreIAMServiceRole                
+  rdsDatabaseInstance:
+    #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html
+    Type: AWS::RDS::DBInstance
+    Properties: 
+      AllocatedStorage: !Ref StorageSize
+      AllowMajorVersionUpgrade: FALSE
+      #AssociatedRoles: DBInstanceRole
+      AutoMinorVersionUpgrade: FALSE
+      BackupRetentionPeriod: 0
+      CACertificateIdentifier: rds-ca-rsa2048-g1
+      #CertificateDetails: CertificateDetails
+      CertificateRotationRestart: FALSE
+      CharacterSetName: SQL_Latin1_General_CP1_CI_AS
+      CopyTagsToSnapshot: TRUE
+      DBInstanceClass: !Ref InstanceType
+      DBInstanceIdentifier: !Ref InstanceName
+      DBParameterGroupName: !Ref rdsDBParameterGroup
+      DBSnapshotIdentifier: ''
+      DBSubnetGroupName: !Ref rdsDBSubnetGroup
+      DeleteAutomatedBackups: FALSE
+      DeletionProtection: FALSE
+      #Domain: String
+      #DomainIAMRoleName: String
+      #https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.SQLServer.html
+      EnableCloudwatchLogsExports: ["agent", "error"]
+      EnableIAMDatabaseAuthentication: FALSE
+      EnablePerformanceInsights: true
+      #Endpoint: Endpoint
+      Engine: !Ref Engine
+      EngineVersion: !Ref EngineVersion
+      Iops: !Ref StorageIOPS
+      #KmsKeyId: String
+      LicenseModel: license-included
+      ManageMasterUserPassword: FALSE
+      MasterUsername: !Ref DatabaseUsername
+      MasterUserPassword: !Ref DatabasePassword
+      #MasterUserSecret: MasterUserSecret
+      #MaxAllocatedStorage: 30
+      MonitoringInterval: 0
+      #MonitoringRoleArn: String
+      MultiAZ: !Ref MultiAZ
+      NetworkType: IPV4
+      OptionGroupName: !Ref rdsOptionGroup
+      # PerformanceInsightsKMSKeyId: String
+      PerformanceInsightsRetentionPeriod: 7
+      Port: "1433"
+      #PreferredBackupWindow: String
+      #PreferredMaintenanceWindow: String
+      PubliclyAccessible: !Ref PubliclyAccessible
+      StorageEncrypted: false
+      #https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage
+      StorageThroughput: !Ref StorageThroughput
+      StorageType: !Ref StorageType
+      #Tags:  - Tag
+      #Timezone: String
+      #UseLatestRestorableTime: Boolean
+      VPCSecurityGroups:
+      - Fn::GetAtt:
+        - rdsSecurityGroup
+        - GroupId
+
+    DependsOn: ["rdsSecurityGroup", "rdsDBSubnetGroup" , "rdsOptionGroup", "rdsDBParameterGroup"]
+Outputs:
+   SQLDatabaseEndpoint:
+     Description: Database endpoint
+     Value: !Sub "${rdsDatabaseInstance.Endpoint.Address}:${rdsDatabaseInstance.Endpoint.Port}"
+   GroupId:
+     Description: SQL Server Security Group
+     Value: !Ref rdsSecurityGroup
+   OptionGroupArn:
+     #https://docs.aws.amazon.com/cli/latest/reference/rds/describe-option-groups.html
+     Description: OptionGroup Arn
+     Value: !Ref rdsOptionGroup
+   DBParameterGroupName:
+     #https://docs.aws.amazon.com/cli/latest/reference/rds/describe-db-parameter-groups.html
+     Description: DbParameterGroup Name
+     Value: !Ref rdsDBParameterGroup
+   DBParameterGroupArn:
+     #https://docs.aws.amazon.com/cli/latest/reference/rds/describe-db-parameter-groups.html
+     Description: DbParameterGroup ARN
+     Value: !Ref rdsDBParameterGroup

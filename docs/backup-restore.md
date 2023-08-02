@@ -1,6 +1,7 @@
-## Backup-Restore ##
+# User Initaited Backup-Restore #
 As AWS RDS for SQL does not grant file system access, only option we have is to use AWS S3 as intermediate store.
 
+## Restore database into AWS RDS##
 ### Upload database backup into AWS S3 ###
 There are multiple ways to get database backup into AWS S3. Appropriate option can be used depending on Size of database backup, Upload internet speed, in-transit data protection requirements.
 

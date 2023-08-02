@@ -38,8 +38,8 @@ It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/5-create-dbinstance-login.png)
 
 ## Create Database ##
-Create Database using preferred settings and configuration based on business requirement
-For development, testing purpose, this query can be used
+Create Database using preferred settings and configuration based on business requirement.
+For development, test environment setup, this query can be used
 
 ```
 

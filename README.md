@@ -1,5 +1,5 @@
 ## Purpose ##
-Provide an accelerator/quickstart/guidance/SoP/confidence to adopt AWS RDS for SQL in the context of Maximo Application Suite.
+Provide an accelerator/quickstart/guidance/SoP/confidence to adopt AWS RDS for SQL as a supportable relational database provider for MAS Manage+ Health and related industry solutions, add ons.
 
 ## Design goals/Requirements ##
 - [x] One click deployment and Rollback using Declarative Infrastructure

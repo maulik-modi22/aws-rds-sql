@@ -14,7 +14,7 @@ Sample code
 aws s3 cp "maxdb76.bak" "s3://rmaulik-dsdb/manage/" --storage-class ONEZONE_IA
 ```
 
-Advanced optins are to use AWS Private Link over VPN, Amazon S3 File Gateway.
+Advanced options are to use over VPN, trust establishment between AWS Accounts. Some examples are - AWS Private Link over VPN and Amazon S3 File Gateway.
 
 ### Restore to AWS RDS ###
 You can run this query to restore database backup into AWS RDS
@@ -22,14 +22,14 @@ Sample Query
 
 ```
 exec msdb.dbo.rds_restore_database
-@restore_db_name='maximo86-demo-data',
-@s3_arn_to_restore_from='arn:aws:s3:::rmaulik-dsdb/manage/maxe2e-v8600-1-demodata.bak';
+@restore_db_name='maxdb76',
+@s3_arn_to_restore_from='arn:aws:s3:::rmaulik-dsdb/manage/maxdb76.bak';
 ```
 
 To verify if restore is completed
 
 ```
-exec msdb.dbo.rds_task_status @db_name='database_name'; 
+exec msdb.dbo.rds_task_status @db_name='maxdb76'; 
 ```
 
 ![Restore to AWS RDS](pics/backup-restore/2-restore-to-rds.png)

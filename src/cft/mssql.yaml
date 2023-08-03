@@ -12,7 +12,7 @@ Parameters:
     Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/
   BackupRestoreIAMServiceRole:
     Type: String
-    Description: IAM Role with access to S3 full Access permision to perform backup/restore
+    Description: User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
   InstanceName:
     Description: RDS SQL Server Instance Name
     Type: String
@@ -93,6 +93,16 @@ Parameters:
     - sqlserver-se-15.0
     - sqlserver-ee-15.0
     - sqlserver-web-15.0
+  AutomatedBackupRetentionPeriod:
+    Description: Specify duration(Days) for automated backup Retention Period(0-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
+    Type: Number
+    Default: 0
+    MinValue: 0
+    MaxValue: 35
+  AutomatedBackupWindow:
+    Description: Preferred 30 Minutes window in UTC e.g. 22:00-22:30
+    Type: String
+    Default: 22:00-22:30
   DatabaseUsername:
     AllowedPattern: "[a-zA-Z0-9]+"
     ConstraintDescription: must contain only alphanumeric characters.
@@ -125,6 +135,8 @@ Metadata:
           default: "Backup Restore Settings"
         Parameters: 
           - BackupRestoreIAMServiceRole
+          - AutomatedBackupRetentionPeriod
+          - AutomatedBackupWindow
       - 
         Label: 
           default: "Instance Configuration"
@@ -194,7 +206,7 @@ Resources:
       AllowMajorVersionUpgrade: FALSE
       #AssociatedRoles: DBInstanceRole
       AutoMinorVersionUpgrade: FALSE
-      BackupRetentionPeriod: 0
+      BackupRetentionPeriod: !Ref AutomatedBackupRetentionPeriod
       CACertificateIdentifier: rds-ca-rsa2048-g1
       #CertificateDetails: CertificateDetails
       CertificateRotationRestart: FALSE
@@ -232,7 +244,7 @@ Resources:
       # PerformanceInsightsKMSKeyId: String
       PerformanceInsightsRetentionPeriod: 7
       Port: "1433"
-      #PreferredBackupWindow: String
+      PreferredBackupWindow: !Ref AutomatedBackupWindow
       #PreferredMaintenanceWindow: String
       PubliclyAccessible: !Ref PubliclyAccessible
       StorageEncrypted: false

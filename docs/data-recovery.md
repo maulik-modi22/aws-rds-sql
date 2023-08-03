@@ -1,6 +1,6 @@
 # Data Recoverability #
 ## Purpose ##
-Data corruption can happen due to many reasons e.g. accidentially deleting/updating records from important tables. Hence, strong data recoverability strategy is required.
+Data corruption can happen due to many reasons e.g. accidentially deletion/manipulation records from important tables. Hence, strong data recoverability strategy is required.
 
 ## Automated Backup ##
 Configuring automated backup requires defining,

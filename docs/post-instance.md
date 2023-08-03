@@ -1,4 +1,4 @@
-## Verification ##
+## Security Group Verification ##
 Verify that Security Group has been successfully created white listing provided CIDR range with SQL Server Port. This allows making connection from management PC.
 
 ![CIDR Range](pics/post-instance/1-securitygroup.png)

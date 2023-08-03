@@ -41,3 +41,8 @@ Create IAM Service Role with policy shown below replacing MY-MAS-DB-BACKUP-BUCKE
 
 ## Auditing ##
 Coming Soon!
+
+## Granting permissions to Users ##
+To start with, use built-in policies e.g. AWS managed policy: AmazonRDSReadOnlyAccess can be assigned so users can observe the infrastructure but cannot modify anything that affects the infrastructure.
+
+[](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-security-iam-awsmanpol.html#rds-security-iam-awsmanpol-AmazonRDSReadOnlyAccess)

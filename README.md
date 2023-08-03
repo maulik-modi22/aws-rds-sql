@@ -8,10 +8,10 @@ Provide an accelerator/quickstart/guidance/SoP/confidence to adopt AWS RDS for S
 - [x] Have Primitive validations in place for fail-fast/fast feedback
 - [x] Recommend sensible defaults
 - [x] [Scriptable database setup](docs/post-instance.md)
-- [ ] [User initiated backup/restore of database](docs/backup-restore.md)
+- [x] [User initiated backup/restore of database](docs/backup-restore.md)
 - [ ] Performance monitoring and alerting
 - [ ] Auditability (who did what, when)
 - [ ] Data Protection (at-rest and in-transit) 
-- [ ] Data Recoverability (to err is human!, outages do happen)
+- [x] [Data Recoverability (to err is human!, outages do happen)](docs/data-recovery.md)
 - [ ] Reporting/Read only replica
 - [ ] Cost Estimation

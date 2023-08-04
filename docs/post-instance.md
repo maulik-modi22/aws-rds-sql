@@ -135,3 +135,28 @@ CREATE USER maxdbowner
 FROM LOGIN maxdbowner
 WITH DEFAULT_SCHEMA=dbo;
 ```
+
+## CLI Approach ##
+Refer [Script variables](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-use-scripting-variables?view=sql-server-ver16)
+### Option 1 ###
+```
+sqlcmd -S 172.174.188.115 -d maxe2e -U maxe2e
+Password: [enter password here]
+1> SELECT top 1 varname from maxvars
+2> go
+
+1> exit
+```
+
+### Option 2 ###
+```
+sqlcmd config current-context
+sqlcmd config add-user --name sqlsysadmin --username maxe2e --password-encryption none
+sqlcmd config add-endpoint --name epawsrds1 --address 172.174.188.115 --port 1433
+sqlcmd config add-context --name mssql1434 --user sqlsysadmin --endpoint epawsrds1
+
+sqlcmd config current-context
+sqlcmd config delete-context --name mssql1434
+
+sqlcmd -q "SELECT * from maxvars" -d maxe2e
+```

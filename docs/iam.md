@@ -59,6 +59,13 @@ By default, AWS RDS Database Instance does not have access to any object storage
 ## Auditing ##
 Coming Soon!
 
+1. IAM_ROLE_ARN
+2. S3_BUCKET_ARN
+3. ENABLE_COMPRESSION
+4. RETENTION_TIME
+
+[Implementation Reference - Support for SQL Server Audit](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html)
+
 ## Granting permissions to Users ##
 To start with, use built-in policies e.g. AWS managed policy: AmazonRDSReadOnlyAccess can be assigned so users can observe the infrastructure but cannot modify anything that affects the infrastructure.
 

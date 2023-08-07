@@ -137,7 +137,8 @@ WITH DEFAULT_SCHEMA=dbo;
 ```
 
 ## CLI Approach ##
-Refer [Script variables](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-use-scripting-variables?view=sql-server-ver16)
+Download [Mature SQLCmd for Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-setup-tools?view=sql-server-ver16&tabs=redhat-install) or [Cross Platform SQLCmd](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/go-sqlcmd-utility?view=sql-server-ver16&tabs=mac)
+
 ### Option 1 ###
 ```
 sqlcmd -S 172.174.188.115 -d maxe2e -U maxe2e
@@ -147,6 +148,9 @@ Password: [enter password here]
 
 1> exit
 ```
+
+TODO:
+Refer [Script variables](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-use-scripting-variables?view=sql-server-ver16)
 
 ### Option 2 ###
 ```

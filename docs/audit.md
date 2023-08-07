@@ -78,3 +78,5 @@ backup
 [Sample Audit policy for SQL Server](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/DBActivityStreams.configuring-auditing-SQLServer.html)
 
 [Monitoring Activity Streams](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/DBActivityStreams.Monitoring.html)
+
+[Integrate with Guardium insights](https://www.ibm.com/docs/en/guardium/11.5?topic=setup-discover-configure-aws-data-streams)

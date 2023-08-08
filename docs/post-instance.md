@@ -141,8 +141,9 @@ Download [Mature SQLCmd for Linux](https://learn.microsoft.com/en-us/sql/linux/s
 
 ### Option 1 ###
 ```
+export SQLCMDPASSWORD=<<PASSWORD>>
+export SQLCMDFORMAT=vertical
 sqlcmd -S 172.174.188.115 -d maxe2e -U maxe2e
-Password: [enter password here]
 1> SELECT top 1 varname from maxvars
 2> go
 

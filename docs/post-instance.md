@@ -161,6 +161,7 @@ sqlcmd config add-endpoint --name epawsrds1 --address 172.174.188.115 --port 143
 sqlcmd config add-context --name mssql1434 --user sqlsysadmin --endpoint epawsrds1
 
 sqlcmd config current-context
+sqlcmd config use-context mssql1434
 sqlcmd config delete-context --name mssql1434
 
 sqlcmd -q "SELECT * from maxvars" -d maxe2e

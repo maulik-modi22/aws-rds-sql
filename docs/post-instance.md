@@ -162,7 +162,8 @@ sqlcmd config add-context --name mssql1434 --user sqlsysadmin --endpoint epawsrd
 
 sqlcmd config current-context
 sqlcmd config use-context mssql1434
-sqlcmd config delete-context --name mssql1434
 
 sqlcmd -q "SELECT * from maxvars" -d maxe2e
+
+sqlcmd config delete-context --name mssql1434
 ```

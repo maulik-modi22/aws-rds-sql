@@ -8,5 +8,6 @@
 - [x] Verify that credentials are correct and user has access to the database
 - [x] Verify connectivity using client tool from the same network if possible e.g.
 `tnc <<IP | DNS>> -port <<MSSQL Specific Port>>`
+- [x] Verify that database is ONLINE
 
 https://www.redhat.com/en/blog/running-microsoft-sql-server-2019-openshift-using-red-hat-openshift-container-storage

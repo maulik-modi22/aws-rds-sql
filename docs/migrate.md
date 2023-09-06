@@ -498,3 +498,60 @@ https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-instan
   ]
 }
 ```
+
+## Replication Run ##
+
+### Migration Outcome ###
+![Table statistics](pics/migrate/status/statistics.png)
+
+Refer
+https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-table-statistics.html
+```
+aws dms describe-replication-table-statistics
+```
+
+```
+ "TableStatistics": [
+        {
+            "SchemaName": "dbo",
+            "TableName": "workorder",
+            "Inserts": 0,
+            "Deletes": 0,
+            "Updates": 0,
+            "Ddls": 0,
+            "AppliedInserts": 0,
+            "AppliedDeletes": 0,
+            "AppliedUpdates": 0,
+            "AppliedDdls": 0,
+            "FullLoadRows": 67481,
+            "FullLoadCondtnlChkFailedRows": 0,
+            "FullLoadErrorRows": 0,
+            "FullLoadStartTime": "2023-09-01T07:49:43.761000+00:00",
+            "FullLoadEndTime": "2023-09-01T07:50:01.109000+00:00",
+            "FullLoadReloaded": false,
+            "LastUpdateTime": "2023-09-06T05:24:42.699000+00:00",
+            "TableState": "Table completed",
+            "ValidationPendingRecords": 0,
+            "ValidationFailedRecords": 21,
+            "ValidationSuspendedRecords": 0,
+            "ValidationState": "Mismatched records"
+        }
+    ]
+```
+
+
+![Table statistics](pics/migrate/status/more-tables.png)
+
+### Inspecting Errors ###
+
+For more information, refer https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Validating.html#CHAP_Validating.Troubleshooting
+Connecting to destination table and inspect errors
+```
+select * from awsdms_validation_failures_v1 where "TABLE_NAME" ='workorder'
+```
+
+
+![Table errors](pics/migrate/status/workorder-errors.png)
+
+![Table errors](pics/migrate/status/maxattribute-errors.png)
+

@@ -136,6 +136,7 @@ FROM LOGIN maxdbowner
 WITH DEFAULT_SCHEMA=dbo;
 ```
 
+
 ## CLI Approach ##
 Download [Mature SQLCmd for Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-setup-tools?view=sql-server-ver16&tabs=redhat-install) or [Cross Platform SQLCmd](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/go-sqlcmd-utility?view=sql-server-ver16&tabs=mac)
 

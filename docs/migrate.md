@@ -1,9 +1,12 @@
 # SQL Server to Postgres Migration #
 ## Find supported database engines ##
 More info is https://docs.aws.amazon.com/cli/latest/reference/dms/describe-endpoint-types.html
+
+Command
 ```
 aws dms describe-endpoint-types --filters "Name=engine-name,Values=db2"
 ```
+Sample response
 ```
 {
     "SupportedEndpointTypes": [
@@ -16,10 +19,11 @@ aws dms describe-endpoint-types --filters "Name=engine-name,Values=db2"
     ]
 }
 ```
-
+Command
 ```
 aws dms describe-endpoint-types --filters "Name=engine-name,Values=sqlserver"
 ```
+Sample response
 ```
 {
     "SupportedEndpointTypes": [
@@ -161,13 +165,16 @@ Inbound rule allows VPC CIDR
 
 ## Describe replication instances ##
 Observer instance class, engine version and security group
-![Replication Instance](pics/migrate/replication-instance/instance-settings.png)
-https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-instances.html
+[More info - here](https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-instances.html)
 
+![Replication Instance](pics/migrate/replication-instance/instance-settings.png)
+
+Command
 ```
  aws dms describe-replication-instances
 ```
 
+Response
 ```
 {
     "ReplicationInstances": [
@@ -505,11 +512,14 @@ https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-instan
 ![Table statistics](pics/migrate/status/statistics.png)
 
 Refer
-https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-table-statistics.html
+[More info - here](https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-table-statistics.html)
+
+Command
 ```
 aws dms describe-replication-table-statistics
 ```
 
+Response
 ```
  "TableStatistics": [
         {
@@ -546,11 +556,13 @@ aws dms describe-replication-table-statistics
 
 For more information, refer https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Validating.html#CHAP_Validating.Troubleshooting
 Connecting to destination table and inspect errors
+
+Command
 ```
 select * from awsdms_validation_failures_v1 where "TABLE_NAME" ='workorder'
 ```
 
-
+Response
 ![Table errors](pics/migrate/status/workorder-errors.png)
 
 ![Table errors](pics/migrate/status/maxattribute-errors.png)

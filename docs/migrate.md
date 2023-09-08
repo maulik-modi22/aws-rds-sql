@@ -506,6 +506,142 @@ Response
 }
 ```
 
+## Pre-Migration Assessment ##
+Running Pre-migration assessment requires setting up S3 bucket and AWS DMS Service linked role
+At the end of migration assessement run, we can see assessment logs are stored in S3 bucket
+
+
+### DMS Service linked role ###
+Refer [AWS Docs for more information](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.AssessmentReport.html)
+
+Sample policy Json, replace ``<<MIGRATION-ASSESSMENT-LOG>>`` with bucket name 
+
+```
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:GetObject",
+            "s3:PutObjectTagging"
+         ],
+         "Resource":[
+            "arn:aws:s3:::<<MIGRATION-ASSESSMENT-LOG>>/*"
+         ]
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:ListBucket",
+            "s3:GetBucketLocation"
+         ],
+         "Resource":[
+            "arn:aws:s3:::<<MIGRATION-ASSESSMENT-LOG>>"
+         ]
+      }
+   ]
+}
+```
+Custom Trust entity
+```
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Sid":"",
+         "Effect":"Allow",
+         "Principal":{
+            "Service":"dms.amazonaws.com"
+         },
+         "Action":"sts:AssumeRole"
+      }
+   ]
+}       
+```
+
+### Assessment outcome ###
+![Migration assessment log](pics/migrate/assessment/migration-log.png)
+
+Summary
+
+```
+{
+  "version": "0.0.2",
+  "overall-test-result": "passed",
+  "summary": {
+    "passed": [
+      {
+        "test-name": "sqlserver-check-for-columnstore-indexes",
+        "test-result": "passed",
+        "test-result-details": "Validation succeeded, no tables with columnstore indexes found.",
+        "results-summary": {
+          "passed": "N/A",
+          "warning": "N/A",
+          "failed": "N/A"
+        }
+      },
+      {
+        "test-name": "unsupported-data-types-in-source",
+        "test-result": "passed",
+        "test-result-details": "No columns in scope of migration have been identified as unsupported or partially supported",
+        "results-summary": {
+          "passed": "N/A",
+          "warning": "N/A",
+          "failed": "N/A"
+        }
+      },
+      {
+        "test-name": "sqlserver-check-for-memory-optimized-tables",
+        "test-result": "passed",
+        "test-result-details": "Validation succeeded, no memory optimized tables found",
+        "results-summary": {
+          "passed": "N/A",
+          "warning": "N/A",
+          "failed": "N/A"
+        }
+      },
+      {
+        "test-name": "table-with-lob-but-without-primary-key-or-unique-constraint",
+        "test-result": "passed",
+        "test-result-details": "No tables in scope of migration have been identified as having a LOB column without a Primary Key or Unique Constraint",
+        "results-summary": {
+          "passed": "N/A",
+          "warning": "N/A",
+          "failed": "N/A"
+        }
+      },
+      {
+        "test-name": "sqlserver-check-for-temporal-tables",
+        "test-result": "passed",
+        "test-result-details": "Validation succeeded, no temporal tables found.",
+        "results-summary": {
+          "passed": "N/A",
+          "warning": "N/A",
+          "failed": "N/A"
+        }
+      },
+      {
+        "test-name": "full-lob-not-nullable-at-target",
+        "test-result": "passed",
+        "test-result-details": "No LOB columns in scope of migration have been identified as not nullable",
+        "results-summary": {
+          "passed": "N/A",
+          "warning": "N/A",
+          "failed": "N/A"
+        }
+      }
+    ],
+    "failed": [],
+    "error": [],
+    "warning": [],
+    "cancelled": []
+  }
+}
+```
+
 ## Replication Run ##
 
 ### Migration Outcome ###

@@ -136,6 +136,7 @@ Metadata:
         Parameters: 
           - VpcId
           - PubliclyAccessible
+          - MultiAZ
           - SubnetId
           - WhiteListCIDR
       - Label:
@@ -150,7 +151,6 @@ Metadata:
         Parameters: 
           - InstanceType
           - InstanceName
-          - MultiAZ
           - StorageType
           - StorageSize
           - StorageIOPS

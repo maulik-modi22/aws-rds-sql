@@ -9,7 +9,7 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
   WhiteListCIDR:
     Type: String
-    Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/
+    Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/, if your IP is 49.36.64.32 then enter 49.36.64.32/32
   BackupRestoreIAMServiceRole:
     Type: String
     Description: User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
@@ -162,6 +162,7 @@ Metadata:
           - EngineMajorVersion
           - EngineVersion
           - EngineFamily
+          - Collation
           - DatabaseUsername
           - DatabasePassword
 Resources:

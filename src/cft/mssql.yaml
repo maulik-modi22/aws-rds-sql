@@ -111,6 +111,12 @@ Parameters:
     AllowedValues:
       - true
       - false
+  UserConnections:
+    Type: Number
+    Description: Maximum number of database connections, 0:Unlimited, Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
+    Default: 0
+    MinValue: 0
+    MaxValue: 32767
   AutomatedBackupRetentionPeriod:
     Description: Specify duration(Days) for automated backup Retention Period(0-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
     Type: Number
@@ -175,6 +181,7 @@ Metadata:
           - EngineFamily
           - Collation
           - Timezone
+          - FIPS
           - DatabaseUsername
           - DatabasePassword
 Resources:
@@ -206,6 +213,8 @@ Resources:
       Parameters:
         rds.force_ssl: 1
         rds.fips: !Ref FIPS
+        user_connections: !Ref UserConnections
+
         #rds.tls12:
   rdsOptionGroup:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-optiongroup.html

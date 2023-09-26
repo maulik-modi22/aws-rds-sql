@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Creates an empty SQL Server RDS database as an example for automated deployments.
 Parameters:
   VpcId:
-    Description: Existing VPC
+    Description: Parent VPC
     Type: AWS::EC2::VPC::Id
   SubnetId:
     Description: Existing Subnets (Select At-least Two Subnets in different Availability zones irrespective of Single AZ or Multi AZ; Select Public Subnets ONLY for Public access)
@@ -12,11 +12,10 @@ Parameters:
     Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/, if your IP is 49.36.64.32 then enter 49.36.64.32/32
   BackupRestoreIAMServiceRole:
     Type: String
-    Description: User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
+    Description: ARN of User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
   InstanceName:
-    Description: RDS SQL Server Instance Name
+    Description: RDS SQL Server Instance Name, Use unique identifier
     Type: String
-    Default: SqlRdsDB
     MinLength: '1'
     MaxLength: '63'
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"

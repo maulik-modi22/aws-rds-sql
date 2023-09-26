@@ -100,6 +100,17 @@ Parameters:
     Type: String
     Default: SQL_Latin1_General_CP1_CI_AS
     Description: Refer Server-level collation section in this link https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.CommonDBATasks.Collation.html#Appendix.SQLServer.CommonDBATasks.Collation.Server
+  Timezone:
+    Type: String
+    Default: UTC
+    Description: Refer Supported Timezones in this link https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone.Zones
+  FIPS:
+    Type: String
+    Default: False
+    Description: Require FIPS?
+    AllowedValues:
+      - true
+      - false
   AutomatedBackupRetentionPeriod:
     Description: Specify duration(Days) for automated backup Retention Period(0-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
     Type: Number
@@ -163,6 +174,7 @@ Metadata:
           - EngineVersion
           - EngineFamily
           - Collation
+          - Timezone
           - DatabaseUsername
           - DatabasePassword
 Resources:
@@ -193,6 +205,8 @@ Resources:
       Family: !Ref EngineFamily
       Parameters:
         rds.force_ssl: 1
+        rds.fips: !Ref FIPS
+        #rds.tls12:
   rdsOptionGroup:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-optiongroup.html
     Type: AWS::RDS::OptionGroup
@@ -260,7 +274,7 @@ Resources:
       StorageThroughput: !Ref StorageThroughput
       StorageType: !Ref StorageType
       #Tags:  - Tag
-      #Timezone: String
+      Timezone: !Ref Timezone
       #UseLatestRestorableTime: Boolean
       VPCSecurityGroups:
       - Fn::GetAtt:

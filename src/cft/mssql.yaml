@@ -25,9 +25,12 @@ Parameters:
     Type: String
     Default: db.m6i.large
     AllowedValues:
+      - db.r5b.large
+      - db.r5d.large
       - db.m6i.large
       - db.r6i.large
-      - db.r5b.large
+      - db.m5d.large
+      - z1d.large
       - db.t3.xlarge
       - db.t3.small
   MultiAZ:
@@ -84,7 +87,7 @@ Parameters:
   EngineVersion:
     Type: String
     Default: 15.00.4316.3.v1
-    Description: Select AWS RDS Engine Version
+    Description: Enter AWS RDS Engine Version, Use valid RDS API EngineVersion from https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport
   EngineFamily:
     Type: String
     Default: sqlserver-se-15.0
@@ -93,6 +96,10 @@ Parameters:
     - sqlserver-se-15.0
     - sqlserver-ee-15.0
     - sqlserver-web-15.0
+  Collation:
+    Type: String
+    Default: SQL_Latin1_General_CP1_CI_AS
+    Description: Refer Server-level collation section in this link https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.CommonDBATasks.Collation.html#Appendix.SQLServer.CommonDBATasks.Collation.Database-Table-Column
   AutomatedBackupRetentionPeriod:
     Description: Specify duration(Days) for automated backup Retention Period(0-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
     Type: Number
@@ -210,7 +217,7 @@ Resources:
       CACertificateIdentifier: rds-ca-rsa2048-g1
       #CertificateDetails: CertificateDetails
       CertificateRotationRestart: FALSE
-      CharacterSetName: SQL_Latin1_General_CP1_CI_AS
+      CharacterSetName: !Ref Collation
       CopyTagsToSnapshot: TRUE
       DBInstanceClass: !Ref InstanceType
       DBInstanceIdentifier: !Ref InstanceName

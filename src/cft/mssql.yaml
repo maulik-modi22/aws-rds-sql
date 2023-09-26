@@ -99,7 +99,7 @@ Parameters:
   Collation:
     Type: String
     Default: SQL_Latin1_General_CP1_CI_AS
-    Description: Refer Server-level collation section in this link https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.CommonDBATasks.Collation.html#Appendix.SQLServer.CommonDBATasks.Collation.Database-Table-Column
+    Description: Refer Server-level collation section in this link https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.CommonDBATasks.Collation.html#Appendix.SQLServer.CommonDBATasks.Collation.Server
   AutomatedBackupRetentionPeriod:
     Description: Specify duration(Days) for automated backup Retention Period(0-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
     Type: Number

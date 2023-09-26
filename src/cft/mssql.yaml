@@ -111,7 +111,7 @@ Parameters:
     AllowedValues:
       - true
       - false
-  UserConnections:
+  MaxConnections:
     Type: Number
     Description: Maximum number of database connections, 0:Unlimited, Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
     Default: 0
@@ -164,7 +164,7 @@ Metadata:
           - AutomatedBackupWindow
       - 
         Label: 
-          default: "Instance Configuration"
+          default: "Capacity Configuration"
         Parameters: 
           - InstanceType
           - InstanceName
@@ -172,8 +172,9 @@ Metadata:
           - StorageSize
           - StorageIOPS
           - StorageThroughput
+          - MaxConnections
       - Label: 
-          default: "SQL Server Configuration"
+          default: "Engine Configuration"
         Parameters: 
           - Engine
           - EngineMajorVersion
@@ -182,6 +183,7 @@ Metadata:
           - Collation
           - Timezone
           - FIPS
+          - UserCo
           - DatabaseUsername
           - DatabasePassword
 Resources:
@@ -213,8 +215,7 @@ Resources:
       Parameters:
         rds.force_ssl: 1
         rds.fips: !Ref FIPS
-        user_connections: !Ref UserConnections
-
+        user_connections: !Ref MaxConnections
         #rds.tls12:
   rdsOptionGroup:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-optiongroup.html

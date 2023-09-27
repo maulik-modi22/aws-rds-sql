@@ -9,18 +9,31 @@ Download [Azure Data Studio](https://learn.microsoft.com/en-us/sql/azure-data-st
 Extract Endpoint, Port and establish connection using Admin username and Password provided
 ![ConnectionScreenshot](pics/post-instance/2-rds-connection.png)
 
-## Verify Version ##
+## Host Operating system ##
+To find out host operating system, run this SQL Query:
+```
+SELECT host_platform
+,host_distribution
+,host_sku
+,os_language_version
+,host_release 
+,host_architecture
+FROM sys.dm_os_host_info;
+```
+![OperatingSystem](pics/post-instance/8-hostos.png)
+
+## MS-SQL Database Engine ##
 To find out  MS SQL Server installed version and edition, run this SQL Query. 
 
 ```
-SELECT 
- SERVERPROPERTY('productversion') as version
+SELECT SERVERPROPERTY('productversion') as version
 ,SERVERPROPERTY ('productlevel') as level
 ,SERVERPROPERTY ('edition') as edition
 ,SERVERPROPERTY('ProductBuild') as build;
 ```
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/3-verify-version.png)
+
 
 ## Verify Instance level collation, timezone and language ##
 ```
@@ -31,32 +44,45 @@ SERVERPROPERTY('collation')  as collation
 ,SERVERPROPERTY('SqlCharSetName') AS charset
 ,SERVERPROPERTY('SqlSortOrderName') AS sortorder
 ```
+It would be similar to this:
+![MS SQL Version and Edition](pics/post-instance/10-instance-collation.png)
+
 
 ## Verify location of Data file, log file and backup file ##
 ```
 SELECT
- SERVERPROPERTY('InstanceDefaultDataPath') as DatafileLoc
+  SERVERPROPERTY('MachineName') as MachineName
+ ,SERVERPROPERTY('InstanceDefaultDataPath') as DatafileLoc
  ,SERVERPROPERTY('InstanceDefaultBackupPath') as BackupfileLoc
- ,SERVERPROPERTY('InstanceDefaultLogPath') as LogfileLoc
- , SERVERPROPERTY('MachineName');
+ ,SERVERPROPERTY('InstanceDefaultLogPath') as LogfileLoc;
 ```
+It would be similar to this:
+![MS SQL Version and Edition](pics/post-instance/12-filelocation.png)
 
 ## Verify Full text search is Enabled at Instance Level ##
 ```
 select FULLTEXTSERVICEPROPERTY ( 'IsFulltextInstalled' )
 ```
 It would be similar to this:
-![MS SQL Version and Edition](pics/post-instance/4-verify-full-text-search.png)
+![FullTextsearch at instance level](pics/post-instance/4-verify-full-text-search.png)
+
+## List Languages ##
+This will be used at the time of specifying `DEFAULT_FULLTEXT_LANGUAGE` or `DEFAULT_LANGUAGE` when creating a database
+```
+EXEC sp_helplanguage
+```
+![Instance level languages](pics/post-instance/9-languages.png)
 
 ## Create Login ##
-Create Server Login using this query
+Create Server Login using this query, you can use any of the languages available in alias column
 ```
 CREATE LOGIN maxdbowner
-WITH PASSWORD = 'apjklPPmn!e23@1234567890';
+WITH PASSWORD = 'apjklPPmn!e23@1234567890',
+DEFAULT_LANGUAGE = English;
 ```
 
 It would be similar to this:
-![MS SQL Version and Edition](pics/post-instance/5-create-dbinstance-login.png)
+![Login](pics/post-instance/5-create-dbinstance-login.png)
 
 ## Create Database ##
 Create Database using preferred settings and configuration based on business requirement.
@@ -151,14 +177,16 @@ GO
 ## Verify Database scoped properties ##
 ```
 SELECT 
-name
-,collation_name DbCollation
+sd.database_id
+,sd.name
+,sd.collation_name DbCollation
 ,sd.is_fulltext_enabled
 ,sd.default_fulltext_language_name
-,compatibility_level
+,sd.recovery_model_desc
 ,sd.default_language_name
-,sd.database_id
+,sd.compatibility_level
 ,sd.is_encrypted
+,*
 FROM sys.databases sd
 WHERE name NOT IN ('master', 'model', 'tempdb', 'msdb', 'Resource','rdsadmin');
 ```

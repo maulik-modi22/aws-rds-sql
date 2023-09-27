@@ -22,9 +22,25 @@ SELECT
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/3-verify-version.png)
 
+## Verify Instance level collation and language ##
+```
+SELECT
+SERVERPROPERTY('collation')  as collation
+,@@LANGUAGE AS [Language]
+,SERVERPROPERTY('SqlCharSetName') AS charset
+,SERVERPROPERTY('SqlSortOrderName') AS sortorder
+```
 
+## Verify location of Data file, log file and backup file ##
+```
+SELECT
+ SERVERPROPERTY('InstanceDefaultDataPath') as DatafileLoc
+ ,SERVERPROPERTY('InstanceDefaultBackupPath') as BackupfileLoc
+ ,SERVERPROPERTY('InstanceDefaultLogPath') as LogfileLoc
+ , SERVERPROPERTY('MachineName');
+```
 
-## Verify Full text search is Enabled ##
+## Verify Full text search is Enabled at Instance Level ##
 ```
 select FULLTEXTSERVICEPROPERTY ( 'IsFulltextInstalled' )
 ```
@@ -129,6 +145,21 @@ GO
 IF NOT EXISTS (SELECT name FROM sys.filegroups WHERE is_default=1 AND name = N'PRIMARY') ALTER DATABASE [maximo86] MODIFY FILEGROUP [PRIMARY] DEFAULT
 GO
 
+```
+
+## Verify Database scoped properties ##
+```
+SELECT 
+name
+,collation_name DbCollation
+,sd.is_fulltext_enabled
+,sd.default_fulltext_language_name
+,compatibility_level
+,sd.default_language_name
+,sd.database_id
+,sd.is_encrypted
+FROM sys.databases sd
+WHERE name NOT IN ('master', 'model', 'tempdb', 'msdb', 'Resource','rdsadmin');
 ```
 
 ## Assign User to The Database ##

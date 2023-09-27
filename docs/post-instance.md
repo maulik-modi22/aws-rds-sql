@@ -22,10 +22,11 @@ SELECT
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/3-verify-version.png)
 
-## Verify Instance level collation and language ##
+## Verify Instance level collation, timezone and language ##
 ```
 SELECT
 SERVERPROPERTY('collation')  as collation
+,CURRENT_TIMEZONE() as timezone;
 ,@@LANGUAGE AS [Language]
 ,SERVERPROPERTY('SqlCharSetName') AS charset
 ,SERVERPROPERTY('SqlSortOrderName') AS sortorder

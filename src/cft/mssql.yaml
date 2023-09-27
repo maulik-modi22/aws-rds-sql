@@ -22,12 +22,12 @@ Parameters:
   InstanceType:
     Description: RDS SQL Server Instance Type, Consult https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.InstanceClasses and https://aws.amazon.com/rds/sqlserver/pricing/
     Type: String
-    Default: db.m6i.large
+    Default: db.r6i.large
     AllowedValues:
+      - db.r6i.large
       - db.r5b.large
       - db.r5d.large
       - db.m6i.large
-      - db.r6i.large
       - db.m5d.large
       - z1d.large
       - db.t3.xlarge
@@ -55,7 +55,7 @@ Parameters:
   StorageIOPS:
     Default: 3000
     Type: Number
-    Description: Storage IOPS
+    Description: Storage IOPS, Refer https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html#vol-type-ssd, Max IOPS is also limited by selected EC2 Instance type https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#Concepts.DBInstanceClass.Types
     MinValue: 3000
     MaxValue: 64000
   StorageThroughput:
@@ -214,7 +214,7 @@ Resources:
       Parameters:
         rds.force_ssl: 1
         rds.fips: !Ref FIPS
-        user_connections: !Ref MaxConnections
+        user connections: !Ref MaxConnections
         #rds.tls12:
   rdsOptionGroup:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-optiongroup.html

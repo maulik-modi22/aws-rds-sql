@@ -13,12 +13,16 @@ Extract Endpoint, Port and establish connection using Admin username and Passwor
 To find out  MS SQL Server installed version and edition, run this SQL Query. 
 
 ```
-SELECT SERVERPROPERTY('productversion') prodversion,
-SERVERPROPERTY ('productlevel') level,
-SERVERPROPERTY ('edition') edition
+SELECT 
+ SERVERPROPERTY('productversion') as version
+,SERVERPROPERTY ('productlevel') as level
+,SERVERPROPERTY ('edition') as edition
+,SERVERPROPERTY('ProductBuild') as build;
 ```
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/3-verify-version.png)
+
+
 
 ## Verify Full text search is Enabled ##
 ```

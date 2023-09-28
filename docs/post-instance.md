@@ -34,6 +34,19 @@ SELECT SERVERPROPERTY('productversion') as version
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/3-verify-version.png)
 
+## Verify encrypted connection ##
+```
+select
+client_net_address
+,encrypt_option
+,auth_scheme
+,local_net_address
+,local_tcp_port
+,session_id
+FROM SYS.DM_EXEC_CONNECTIONS where SESSION_ID = @@SPID
+```
+It would be similar to this:
+![Encryppted connection](pics/post-instance/13-encrypt.png)
 
 ## Verify Instance level collation, timezone and language ##
 ```

@@ -214,6 +214,8 @@ Resources:
       Parameters:
         rds.force_ssl: 1
         rds.fips: !Ref FIPS
+        rds.tls10: disabled
+        rds.tls11: disabled
         user connections: !Ref MaxConnections
         #rds.tls12:
   rdsOptionGroup:

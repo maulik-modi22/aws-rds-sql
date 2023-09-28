@@ -45,6 +45,18 @@ WHERE is_dynamic=0;
 
 
 ## Dynamic params that does not require Reboot ##
+```
+SELECT [description]
+,value 
+,value_in_use
+,minimum 
+,maximum
+,name
+,is_advanced
+FROM sys.configurations
+WHERE is_dynamic=0;
+```
+
 |description|value|value_in_use|minimum|maximum|name|is_advanced|is_dynamic|
 |-----------|-----|------------|-------|-------|----|-----------|----------|
 |Maximum recovery interval in minutes|0|0|0|32767|recovery interval (min)|1|1|

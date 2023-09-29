@@ -30,13 +30,13 @@ exec msdb.dbo.rds_restore_database
 @s3_arn_to_restore_from='arn:aws:s3:::rmaulik-dsdb/manage/maxdb76.bak';
 ```
 
-To verify if restore is completed
+To verify if restore is completed, verfiy that `%complete` shows `100`, also observe value in `duration(mins)`
 
 ```
 exec msdb.dbo.rds_task_status @db_name='maxdb76'; 
 ```
-
 ![Restore to AWS RDS](pics/backup-restore/2-restore-to-rds.png)
+
 
 
 ### Verification ###

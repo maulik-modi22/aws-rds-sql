@@ -30,14 +30,25 @@ exec msdb.dbo.rds_restore_database
 @s3_arn_to_restore_from='arn:aws:s3:::rmaulik-dsdb/manage/maxdb76.bak';
 ```
 
-To verify if restore is completed, verfiy that `%complete` shows `100`, also observe value in `duration(mins)`
+Verfiy that `%complete` shows `100`, also observe value in `duration(mins)` to understand time taken to restore
 
 ```
 exec msdb.dbo.rds_task_status @db_name='maxdb76'; 
 ```
 ![Restore to AWS RDS](pics/backup-restore/2-restore-to-rds.png)
 
+Verify that database state is `ONLINE` and recovery model is `FULL`
 
+```
+SELECT 
+name
+,database_id
+,state_desc
+,recovery_model_desc
+FROM sys.databases
+WHERE name NOT IN
+('master','msdb','tempdb','model','rdsadmin')
+```
 
 ### Verification ###
 Run some queries to verify database is restored correctly, querable and usable.

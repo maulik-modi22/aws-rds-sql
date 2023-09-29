@@ -13,6 +13,21 @@ Parameters:
   BackupRestoreIAMServiceRole:
     Type: String
     Description: ARN of User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
+  EnhancedMonitoringRole:
+    Type: String
+    Description: ARN of AWS RDS Enhanced monitoring role
+  EnhancedMonitoringInterval:
+    Type: Number
+    Description: Granularity(seconds) when Enhanced Monitoring metrics are collected for the DB instance
+    Default: 0
+    AllowedValues:
+      - 0 
+      - 1 
+      - 5 
+      - 10 
+      - 15 
+      - 30
+      - 60
   InstanceName:
     Description: RDS SQL Server Instance Name, Use unique identifier
     Type: String
@@ -130,6 +145,9 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: String
+Conditions:
+  #reference for negative condition: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-conditions.html#intrinsic-function-reference-conditions-not
+  EnableEnhancedMonitoring: !Not [!Equals [!Ref EnhancedMonitoringInterval, 0 ]]
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups: 
@@ -148,6 +166,11 @@ Metadata:
           - BackupRestoreIAMServiceRole
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
+      - Label:
+          default: "Enhanced Monitoring"
+        Parameters: 
+          - EnhancedMonitoringRole
+          - EnhancedMonitoringInterval
       - 
         Label: 
           default: "Capacity Configuration"
@@ -256,8 +279,8 @@ Resources:
       MasterUserPassword: !Ref DatabasePassword
       #MasterUserSecret: MasterUserSecret
       #MaxAllocatedStorage: 30
-      MonitoringInterval: 0
-      #MonitoringRoleArn: String
+      MonitoringInterval: !Ref EnhancedMonitoringInterval
+      MonitoringRoleArn: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringRole, !Ref 'AWS::NoValue' ]
       MultiAZ: !Ref MultiAZ
       NetworkType: IPV4
       OptionGroupName: !Ref rdsOptionGroup

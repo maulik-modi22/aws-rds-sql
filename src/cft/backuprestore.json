@@ -1,5 +1,4 @@
 {
-//Code reference - https://repost.aws/knowledge-center/cloudformation-attach-managed-policy
 "AWSTemplateFormatVersion": "2010-09-09",
 "Description": "Create Policy for backup restore",
 "Metadata": 
@@ -64,6 +63,40 @@
            ]
         }
     }
+ },
+ "RDSBackupRestoreRole": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+        "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "rds.amazonaws.com"
+                        ]
+                    },
+                    "Action": [
+                        "sts:AssumeRole"
+                    ]
+                }
+            ]
+        },
+        "ManagedPolicyArns": [
+            {
+                "Ref": "S3BackupRestorePolicy"
+            }
+        ]
+    }
+ }
+},
+"Outputs":{
+ "S3BackupRestoreRoleARN":{
+    "Description": "S3 Backup Restore Role ARN",  
+    "Value" : { "Fn::GetAtt" : [ "RDSBackupRestoreRole", "Arn" ] }
  }
 }
 }
+
+

@@ -20,7 +20,7 @@ Parameters:
     MaxLength: '63'
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
   InstanceType:
-    Description: RDS SQL Server Instance Type, Consult https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.InstanceClasses and https://aws.amazon.com/rds/sqlserver/pricing/
+    Description: RDS SQL Server Instance Type (e.g. db.r6i.large, db.r5b.large, db.r5d.large,...), Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.InstanceClasses and https://aws.amazon.com/rds/sqlserver/pricing/
     Type: String
     Default: db.r6i.large
   MultiAZ:
@@ -104,7 +104,7 @@ Parameters:
     MinValue: 0
     MaxValue: 32767
   AutomatedBackupRetentionPeriod:
-    Description: Specify duration(Days) for automated backup Retention Period(0-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
+    Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
     Type: Number
     Default: 1
     MinValue: 1

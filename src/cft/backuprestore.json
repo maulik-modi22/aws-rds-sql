@@ -1,6 +1,11 @@
 {
+//Code reference - https://repost.aws/knowledge-center/cloudformation-attach-managed-policy
 "AWSTemplateFormatVersion": "2010-09-09",
 "Description": "Create Policy for backup restore",
+"Metadata": 
+{
+  "help":"https://repost.aws/knowledge-center/cloudformation-attach-managed-policy"
+},
 "Parameters" : {
     "S3BucketARN" : {
         "Type" : "String",
@@ -10,7 +15,7 @@
     "Folder" : {
         "Type" : "String",
         "Default": "manage",
-        "Description" : "Folder name to hold database backup file"
+        "Description" : "Folder name to hold database backup"
     }
 },
 "Resources": 

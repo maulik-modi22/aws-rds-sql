@@ -1,0 +1,49 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create Policy for backup restore",
+    "Metadata": 
+    {
+      "help":"https://repost.aws/knowledge-center/cloudformation-attach-managed-policy"
+    },
+    "Parameters" : {
+        "AmazonRDSEnhancedMonitoringRolePolicyArn": {
+            "Type": "String",
+            "Default": "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole",
+            "Description": "ARN of the AmazonRDSEnhancedMonitoringRolePolicy"
+        }
+    },
+    "Resources": {
+        "RDSEnhancedMonitoringRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "monitoring.rds.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    {
+                        "Ref": "AmazonRDSEnhancedMonitoringRolePolicyArn"
+                    }
+                ]
+            }
+         }
+},
+"Outputs":{
+    "RDSEnhancedMonitoringRoleARN":{
+       "Description": "RDS Enhanced Monitoring Role ARN",  
+       "Value" : { "Fn::GetAtt" : [ "RDSEnhancedMonitoringRole", "Arn" ] }
+    }
+   }
+}

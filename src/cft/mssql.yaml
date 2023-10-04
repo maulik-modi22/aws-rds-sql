@@ -10,16 +10,16 @@ Parameters:
   WhiteListCIDR:
     Type: String
     Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/, if your IP is 49.36.64.32 then enter 49.36.64.32/32
-  BackupRestoreIAMServiceRole:
+  BackupRestoreIAMServiceRoleARN:
     Type: String
     Description: ARN of User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
-  EnhancedMonitoringRole:
+  EnhancedMonitoringRoleARN:
     Type: String
-    Description: ARN of AWS RDS Enhanced monitoring role
+    Description: ARN of AWS RDS Enhanced monitoring role, required only if EnhancedMonitoringInterval > 0
   EnhancedMonitoringInterval:
     Type: Number
-    Description: Granularity(seconds) when Enhanced Monitoring metrics are collected for the DB instance
-    Default: 0
+    Description:  Granularity(seconds) when Enhanced Monitoring metrics are collected for the DB instance, specify 0 to disable monitoring
+    Default: 60
     AllowedValues:
       - 0 
       - 1 
@@ -74,7 +74,7 @@ Parameters:
   StorageSize:
     Default: 30
     Type: Number
-    Description: Storage Size In GB
+    Description: Storage Size In GB (Minimum 30 GB)
     MinValue: 30
     MaxValue: 5000
   StorageIOPS:
@@ -138,7 +138,7 @@ Parameters:
     MinValue: 0
     MaxValue: 32767
   AutomatedBackupRetentionPeriod:
-    Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info
+    Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info; You can set the backup retention period of a multi-AZ DB cluster to between 1 and 35 days.
     Type: Number
     Default: 1
     MinValue: 1
@@ -167,6 +167,10 @@ Parameters:
 Conditions:
   #reference for negative condition: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-conditions.html#intrinsic-function-reference-conditions-not
   EnableEnhancedMonitoring: !Not [!Equals [!Ref EnhancedMonitoringInterval, 0 ]]
+  UseStorageEncryption: !Equals [!Ref EncryptStorage, true]
+  UseEncryptionKmsKey: !And 
+      - !Not [!Equals [!Ref EncryptionKMSKeyARN,""]]
+      - !Condition UseStorageEncryption
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups: 
@@ -182,13 +186,13 @@ Metadata:
       - Label:
           default: "Backup Restore Settings"
         Parameters: 
-          - BackupRestoreIAMServiceRole
+          - BackupRestoreIAMServiceRoleARN
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
       - Label:
           default: "Enhanced Monitoring"
         Parameters: 
-          - EnhancedMonitoringRole
+          - EnhancedMonitoringRoleARN
           - EnhancedMonitoringInterval
       - Label:
           default: "Performance Insights"
@@ -268,7 +272,7 @@ Resources:
         - OptionName: SQLSERVER_BACKUP_RESTORE
           OptionSettings:
             - Name: IAM_ROLE_ARN
-              Value: !Ref BackupRestoreIAMServiceRole                
+              Value: !Ref BackupRestoreIAMServiceRoleARN                
   rdsDatabaseInstance:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html
     Type: AWS::RDS::DBInstance
@@ -307,7 +311,7 @@ Resources:
       #MasterUserSecret: MasterUserSecret
       #MaxAllocatedStorage: 30
       MonitoringInterval: !Ref EnhancedMonitoringInterval
-      MonitoringRoleArn: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringRole, !Ref 'AWS::NoValue' ]
+      MonitoringRoleArn: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringRoleARN, !Ref 'AWS::NoValue' ]
       MultiAZ: !Ref MultiAZ
       NetworkType: IPV4
       OptionGroupName: !Ref rdsOptionGroup
@@ -318,7 +322,7 @@ Resources:
       #PreferredMaintenanceWindow: String
       PubliclyAccessible: !Ref PubliclyAccessible
       StorageEncrypted: !Ref EncryptStorage
-      KmsKeyId: !Ref EncryptionKMSKeyARN
+      KmsKeyId: !If [ UseEncryptionKmsKey, !Ref EncryptionKMSKeyARN, !Ref 'AWS::NoValue' ]
       #You can only encrypt an Amazon RDS DB instance when you create it, not after the DB instance is created.
       #You can't turn off encryption on an encrypted DB instance.
       #If you don't specify the key identifier for a customer managed key, Amazon RDS uses the AWS managed key for your new DB instance. Amazon RDS creates an AWS managed key for Amazon RDS for your AWS account. Your AWS account has a different AWS managed key for Amazon RDS for each AWS Region.

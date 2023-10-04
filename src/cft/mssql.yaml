@@ -28,6 +28,15 @@ Parameters:
       - 15 
       - 30
       - 60
+  PerformanceInsightsRetention:
+    Type: Number
+    Description: The number of days to retain Performance Insights data; 7 days retention is free, other acceptable values are Number of months X 31
+    Default: 7
+    AllowedValues:
+         - 7
+         - 31
+         - 62
+         - 93
   InstanceName:
     Description: RDS SQL Server Instance Name, Use unique identifier
     Type: String
@@ -44,6 +53,16 @@ Parameters:
     AllowedValues:
       - true
       - false
+  EncryptStorage:
+    Description: Encrypt Storage?
+    Type: String
+    Default: false
+    AllowedValues:
+      - true
+      - false
+  EncryptionKMSKeyARN:
+    Description: Specify only if you want to use Customer Managed Key (ARN); Leaving empty will use Default AWS KMS key per region per account, refer https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk for more details
+    Type: String  
   StorageType:
     Type: String
     Default: gp3
@@ -66,7 +85,7 @@ Parameters:
     MaxValue: 64000
   StorageThroughput:
     Type: Number
-    Default: "150"
+    Default: "125"
     Description: Storage Throughput, Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage
     MinValue: 125
     MaxValue: 1000
@@ -171,6 +190,15 @@ Metadata:
         Parameters: 
           - EnhancedMonitoringRole
           - EnhancedMonitoringInterval
+      - Label:
+          default: "Performance Insights"
+        Parameters:
+          - PerformanceInsightsRetention
+      - Label:
+          default: "Encryption"
+        Parameters:
+          - EncryptStorage
+          - EncryptionKMSKeyARN
       - 
         Label: 
           default: "Capacity Configuration"
@@ -272,7 +300,6 @@ Resources:
       Engine: !Ref Engine
       EngineVersion: !Ref EngineVersion
       Iops: !Ref StorageIOPS
-      #KmsKeyId: String
       LicenseModel: license-included
       ManageMasterUserPassword: FALSE
       MasterUsername: !Ref DatabaseUsername
@@ -285,12 +312,16 @@ Resources:
       NetworkType: IPV4
       OptionGroupName: !Ref rdsOptionGroup
       # PerformanceInsightsKMSKeyId: String
-      PerformanceInsightsRetentionPeriod: 7
+      PerformanceInsightsRetentionPeriod: !Ref PerformanceInsightsRetention
       Port: "1433"
       PreferredBackupWindow: !Ref AutomatedBackupWindow
       #PreferredMaintenanceWindow: String
       PubliclyAccessible: !Ref PubliclyAccessible
-      StorageEncrypted: false
+      StorageEncrypted: !Ref EncryptStorage
+      KmsKeyId: !Ref EncryptionKMSKeyARN
+      #You can only encrypt an Amazon RDS DB instance when you create it, not after the DB instance is created.
+      #You can't turn off encryption on an encrypted DB instance.
+      #If you don't specify the key identifier for a customer managed key, Amazon RDS uses the AWS managed key for your new DB instance. Amazon RDS creates an AWS managed key for Amazon RDS for your AWS account. Your AWS account has a different AWS managed key for Amazon RDS for each AWS Region.
       #https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage
       StorageThroughput: !Ref StorageThroughput
       StorageType: !Ref StorageType

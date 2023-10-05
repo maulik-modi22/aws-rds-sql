@@ -9,7 +9,7 @@
         "AmazonRDSEnhancedMonitoringRolePolicyArn": {
             "Type": "String",
             "Default": "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole",
-            "Description": "ARN of the AmazonRDSEnhancedMonitoringRolePolicy"
+            "Description": "ARN of the AmazonRDSEnhancedMonitoringRolePolicy, Refer https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonRDSEnhancedMonitoringRole.html"
         }
     },
     "Resources": {

@@ -42,7 +42,7 @@ Parameters:
     Type: String
     MinLength: '1'
     MaxLength: '63'
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]+"
   InstanceType:
     Description: RDS SQL Server Instance Type (e.g. db.r6i.large, db.r5b.large, db.r5d.large,...), Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.InstanceClasses and https://aws.amazon.com/rds/sqlserver/pricing/
     Type: String
@@ -108,8 +108,8 @@ Parameters:
     - '15.00'
   EngineVersion:
     Type: String
-    Default: 15.00.4316.3.v1
-    Description: Enter AWS RDS Engine Version, Use valid RDS API EngineVersion from https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport
+    Default: 15.00.4322.2.v1
+    Description: Enter AWS RDS Engine Version, Use valid RDS API EngineVersion from https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport and Microsoft release cadence here - https://learn.microsoft.com/en-us/troubleshoot/sql/releases/sqlserver-2019/build-versions
   EngineFamily:
     Type: String
     Default: sqlserver-se-15.0
@@ -140,8 +140,8 @@ Parameters:
   AutomatedBackupRetentionPeriod:
     Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info; You can set the backup retention period of a multi-AZ DB cluster to between 1 and 35 days.
     Type: Number
-    Default: 1
-    MinValue: 1
+    Default: 0
+    MinValue: 0
     MaxValue: 35
   AutomatedBackupWindow:
     Description: Preferred 30 Minutes window in UTC e.g. 22:00-22:30
@@ -164,13 +164,26 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: String
+  S3BucketBackupARN:
+    Type: String
+    Description: ARN of S3 Bucket (same region as AWS RDS SQL) to be used for existing database backup e.g. arn:aws:s3:::cust-environment
+    MinLength: '20'
+    MaxLength: '2048'
+  S3BucketBackupFolder:
+    Type: String
+    Description: Folder name to hold database backup
+    MaxLength: '1024'
 Conditions:
   #reference for negative condition: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-conditions.html#intrinsic-function-reference-conditions-not
-  EnableEnhancedMonitoring: !Not [!Equals [!Ref EnhancedMonitoringInterval, 0 ]]
-  UseStorageEncryption: !Equals [!Ref EncryptStorage, true]
+  EnableEnhancedMonitoring: !And
+      - !Not [!Equals [!Ref EnhancedMonitoringInterval, 0 ]]
+      - !Not [!Equals [!Ref EnhancedMonitoringRoleARN,!Ref 'AWS::NoValue']]
   UseEncryptionKmsKey: !And 
-      - !Not [!Equals [!Ref EncryptionKMSKeyARN,""]]
-      - !Condition UseStorageEncryption
+      - !Not [!Equals [!Ref EncryptionKMSKeyARN,!Ref 'AWS::NoValue']]
+      - !Equals [!Ref EncryptStorage, true]
+  HasExistingDatabaseBackup: !And
+      - !Not [!Equals [!Ref S3BucketBackupARN,!Ref 'AWS::NoValue']]
+      - !Not [!Equals [!Ref S3BucketBackupFolder,!Ref 'AWS::NoValue']]
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups: 
@@ -184,12 +197,17 @@ Metadata:
           - SubnetId
           - WhiteListCIDR
       - Label:
-          default: "Backup Restore Settings"
+          default: "Do you require AWS Managed Automated Backups (Point in time recovery)?"
         Parameters: 
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
       - Label:
-          default: "Enhanced Monitoring"
+          default: "Do you have existing database backup to be restored in AWS RDS?"
+        Parameters: 
+          - S3BucketBackupARN
+          - S3BucketBackupFolder
+      - Label:
+          default: "Do you want to enable Enhanced Monitoring?"
         Parameters: 
           - EnhancedMonitoringRoleARN
           - EnhancedMonitoringInterval
@@ -198,7 +216,7 @@ Metadata:
         Parameters:
           - PerformanceInsightsRetention
       - Label:
-          default: "Encryption"
+          default: "Do you require Storage Encryption at Rest?"
         Parameters:
           - EncryptStorage
           - EncryptionKMSKeyARN
@@ -266,15 +284,21 @@ Resources:
       OptionGroupName: !Ref InstanceName
       EngineName: !Ref Engine
       MajorEngineVersion: !Ref EngineMajorVersion
-      OptionGroupDescription: !Join [ " ", "Option group for ", !Ref InstanceName]
+      OptionGroupDescription: !Join [ " ", ["Option group for ", !Ref InstanceName]]
+      #Circular dependnecy error#
       #OptionConfigurations:
-        #- OptionName: SQLSERVER_BACKUP_RESTORE
-         # OptionSettings:
-          #  - Name: IAM_ROLE_ARN
-           #  Value: !Ref BackupRestoreIAMServiceRoleARN                
+       # - OptionName: SQLSERVER_BACKUP_RESTORE
+        #  OptionSettings:
+         #   - Name: IAM_ROLE_ARN
+          #    Value: !GetAtt backupRestoreIAMRole.Arn               
   rdsDatabaseInstance:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html
     Type: AWS::RDS::DBInstance
+    DependsOn:      
+      - "rdsSecurityGroup"
+      - "rdsDBSubnetGroup"
+      - "rdsOptionGroup"
+      - "rdsDBParameterGroup"
     Properties: 
       AllocatedStorage: !Ref StorageSize
       AllowMajorVersionUpgrade: FALSE
@@ -309,7 +333,7 @@ Resources:
       MasterUserPassword: !Ref DatabasePassword
       #MasterUserSecret: MasterUserSecret
       #MaxAllocatedStorage: 30
-      MonitoringInterval: !Ref EnhancedMonitoringInterval
+      MonitoringInterval: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringInterval, 0]
       MonitoringRoleArn: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringRoleARN, !Ref 'AWS::NoValue' ]
       MultiAZ: !Ref MultiAZ
       NetworkType: IPV4
@@ -335,8 +359,53 @@ Resources:
       - Fn::GetAtt:
         - rdsSecurityGroup
         - GroupId
+   
+  # Trust relationship - https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Procedural.Importing.html
+  # Embedded policy - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+  # "arn:aws:rds:Region:my_account_ID:db:db_instance_identifier",
+  # "arn:aws:rds:Region:my_account_ID:og:option_group_name"
+  # Pusedoparameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html
+  backupRestoreIAMRole:
+    Type: "AWS::IAM::Role"
+    DependsOn:
+      - "rdsDatabaseInstance"
+      - "rdsOptionGroup"
+    Condition: HasExistingDatabaseBackup
+    Properties: 
+      RoleName: !Sub "${InstanceName}-S3BackupRestoreIAMRole"
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: Allow
+            Principal: 
+              Service: 
+                - "rds.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                'aws:SourceArn': [!Sub "arn:aws:rds${AWS::Region}:${AWS::AccountId}:og:${rdsOptionGroup}", !Sub "arn:aws:rds${AWS::Region}:${AWS::AccountId}:db:${rdsDatabaseInstance}"]
+      Policies:
+        - PolicyName: !Sub "${InstanceName}-S3BackupRestorePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "s3:ListBucket"
+                  - "s3:GetBucketLocation"
+                Resource: !Ref S3BucketBackupARN
+              - Effect: Allow
+                Action:
+                  - "s3:GetObjectAttributes"
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:AbortMultipartUpload"
+                Resource: !Join ["/",[!Ref S3BucketBackupARN, !Ref S3BucketBackupFolder, "*"]]
+    
+   
 
-    DependsOn: ["rdsSecurityGroup", "rdsDBSubnetGroup" , "rdsOptionGroup", "rdsDBParameterGroup"]
 Outputs:
    SQLDatabaseEndpoint:
      Description: Database endpoint
@@ -356,3 +425,6 @@ Outputs:
      #https://docs.aws.amazon.com/cli/latest/reference/rds/describe-db-parameter-groups.html
      Description: DbParameterGroup ARN
      Value: !Ref rdsDBParameterGroup
+   BackupRestoreRoleArn:
+     Description: Backup restore Role ARN
+     Value: !Sub "${backupRestoreIAMRole.Arn}"

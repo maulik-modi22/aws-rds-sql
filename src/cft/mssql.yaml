@@ -10,9 +10,9 @@ Parameters:
   WhiteListCIDR:
     Type: String
     Description: Provide Whitelist CIDR Range (0.0.0.0/0 or specific IP Range or specific IP), To find IP of your VM - https://checkip.amazonaws.com/, if your IP is 49.36.64.32 then enter 49.36.64.32/32
-  BackupRestoreIAMServiceRoleARN:
-    Type: String
-    Description: ARN of User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
+  #BackupRestoreIAMServiceRoleARN:
+   # Type: String
+    #Description: ARN of User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
   EnhancedMonitoringRoleARN:
     Type: String
     Description: ARN of AWS RDS Enhanced monitoring role, required only if EnhancedMonitoringInterval > 0
@@ -186,7 +186,6 @@ Metadata:
       - Label:
           default: "Backup Restore Settings"
         Parameters: 
-          - BackupRestoreIAMServiceRoleARN
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
       - Label:
@@ -267,12 +266,12 @@ Resources:
       OptionGroupName: !Ref InstanceName
       EngineName: !Ref Engine
       MajorEngineVersion: !Ref EngineMajorVersion
-      OptionGroupDescription: SQL Server Native Backup and Restore
-      OptionConfigurations:
-        - OptionName: SQLSERVER_BACKUP_RESTORE
-          OptionSettings:
-            - Name: IAM_ROLE_ARN
-              Value: !Ref BackupRestoreIAMServiceRoleARN                
+      OptionGroupDescription: !Join [ " ", "Option group for ", !Ref InstanceName]
+      #OptionConfigurations:
+        #- OptionName: SQLSERVER_BACKUP_RESTORE
+         # OptionSettings:
+          #  - Name: IAM_ROLE_ARN
+           #  Value: !Ref BackupRestoreIAMServiceRoleARN                
   rdsDatabaseInstance:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html
     Type: AWS::RDS::DBInstance

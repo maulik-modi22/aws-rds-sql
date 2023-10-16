@@ -80,3 +80,6 @@ backup
 [Monitoring Activity Streams](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/DBActivityStreams.Monitoring.html)
 
 [Integrate with Guardium Data Protection - Data Activity monitoring](https://www.ibm.com/docs/en/guardium/11.5?topic=setup-discover-configure-aws-data-streams) and [System requirements for Guardium](https://www.ibm.com/support/pages/ibm-guardium-system-requirements-and-supported-platforms)
+
+## AWS RDS SQL Server Auditing configuration ##
+To configure SQL Server Audit options

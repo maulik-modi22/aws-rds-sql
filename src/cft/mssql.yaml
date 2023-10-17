@@ -174,16 +174,18 @@ Parameters:
     Description: Folder name to hold database backup
     MaxLength: '1024'
 Conditions:
-  #reference for negative condition: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-conditions.html#intrinsic-function-reference-conditions-not
-  EnableEnhancedMonitoring: !And
-      - !Not [!Equals [!Ref EnhancedMonitoringInterval, 0 ]]
-      - !Not [!Equals [!Ref EnhancedMonitoringRoleARN,!Ref 'AWS::NoValue']]
-  UseEncryptionKmsKey: !And 
-      - !Not [!Equals [!Ref EncryptionKMSKeyARN,!Ref 'AWS::NoValue']]
-      - !Equals [!Ref EncryptStorage, true]
-  HasExistingDatabaseBackup: !And
-      - !Not [!Equals [!Ref S3BucketBackupARN,!Ref 'AWS::NoValue']]
-      - !Not [!Equals [!Ref S3BucketBackupFolder,!Ref 'AWS::NoValue']]
+  HasStorageEncryption: !Equals [!Ref EncryptStorage, true]
+  UseStorageEncryption: !And 
+      - !Not [!Equals [!Ref EncryptionKMSKeyARN,""]]
+      - !Condition HasStorageEncryption
+  HasEnhancedMonitoring: !Not [!Equals [!Ref EnhancedMonitoringInterval, 0]]
+  UseEnhancedMonitoring: !And 
+      - !Not [!Equals [!Ref EnhancedMonitoringRoleARN,""]]
+      - !Condition HasEnhancedMonitoring
+  HasBackupBucket: !Not [!Equals  [!Ref S3BucketBackupARN, ""]]
+  UseExistingDatabaseBackup: !And 
+      - !Not [!Equals [!Ref S3BucketBackupFolder,""]]
+      - !Condition HasBackupBucket
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups: 
@@ -333,8 +335,8 @@ Resources:
       MasterUserPassword: !Ref DatabasePassword
       #MasterUserSecret: MasterUserSecret
       #MaxAllocatedStorage: 30
-      MonitoringInterval: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringInterval, 0]
-      MonitoringRoleArn: !If [ EnableEnhancedMonitoring, !Ref EnhancedMonitoringRoleARN, !Ref 'AWS::NoValue' ]
+      MonitoringInterval: !If [ UseEnhancedMonitoring, !Ref EnhancedMonitoringInterval, 0]
+      MonitoringRoleArn: !If [ UseEnhancedMonitoring, !Ref EnhancedMonitoringRoleARN, !Ref 'AWS::NoValue' ]
       MultiAZ: !Ref MultiAZ
       NetworkType: IPV4
       OptionGroupName: !Ref rdsOptionGroup
@@ -345,7 +347,7 @@ Resources:
       #PreferredMaintenanceWindow: String
       PubliclyAccessible: !Ref PubliclyAccessible
       StorageEncrypted: !Ref EncryptStorage
-      KmsKeyId: !If [ UseEncryptionKmsKey, !Ref EncryptionKMSKeyARN, !Ref 'AWS::NoValue' ]
+      KmsKeyId: !If [ UseStorageEncryption, !Ref EncryptionKMSKeyARN, !Ref 'AWS::NoValue' ]
       #You can only encrypt an Amazon RDS DB instance when you create it, not after the DB instance is created.
       #You can't turn off encryption on an encrypted DB instance.
       #If you don't specify the key identifier for a customer managed key, Amazon RDS uses the AWS managed key for your new DB instance. Amazon RDS creates an AWS managed key for Amazon RDS for your AWS account. Your AWS account has a different AWS managed key for Amazon RDS for each AWS Region.
@@ -355,11 +357,10 @@ Resources:
       #Tags:  - Tag
       Timezone: !Ref Timezone
       #UseLatestRestorableTime: Boolean
-      VPCSecurityGroups:
+      VPCSecurityGroups: 
       - Fn::GetAtt:
         - rdsSecurityGroup
         - GroupId
-   
   # Trust relationship - https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Procedural.Importing.html
   # Embedded policy - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
   # "arn:aws:rds:Region:my_account_ID:db:db_instance_identifier",
@@ -370,7 +371,7 @@ Resources:
     DependsOn:
       - "rdsDatabaseInstance"
       - "rdsOptionGroup"
-    Condition: HasExistingDatabaseBackup
+    Condition: UseExistingDatabaseBackup
     Properties: 
       RoleName: !Sub "${InstanceName}-S3BackupRestoreIAMRole"
       AssumeRolePolicyDocument: 
@@ -384,7 +385,10 @@ Resources:
               - "sts:AssumeRole"
             Condition:
               StringEquals:
-                'aws:SourceArn': [!Sub "arn:aws:rds${AWS::Region}:${AWS::AccountId}:og:${rdsOptionGroup}", !Sub "arn:aws:rds${AWS::Region}:${AWS::AccountId}:db:${rdsDatabaseInstance}"]
+                'aws:SourceArn': 
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:og:${rdsOptionGroup}"
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${rdsDatabaseInstance}"
+      Path: /
       Policies:
         - PolicyName: !Sub "${InstanceName}-S3BackupRestorePolicy"
           PolicyDocument:
@@ -404,8 +408,6 @@ Resources:
                   - "s3:AbortMultipartUpload"
                 Resource: !Join ["/",[!Ref S3BucketBackupARN, !Ref S3BucketBackupFolder, "*"]]
     
-   
-
 Outputs:
    SQLDatabaseEndpoint:
      Description: Database endpoint

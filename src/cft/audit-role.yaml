@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation template IAM Role for SQL Server Auditing, limitation-It can't use S3 Object Lock.
+#Reference: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html
+#Remove option manually - https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/remove-option-from-option-group.html
+Parameters:
+  S3AuditBucketARN:
+    Type: String
+    Description: ARN of S3 Bucket (same region as AWS RDS SQL) to be used for existing database backup e.g. arn:aws:s3:::cust-environment
+    MinLength: '20'
+    MaxLength: '2048'
+    ConstraintDescription: It must be in the same AWS Region as the DB instance; It can't use S3 Object Lock; The bucket owner must also be the IAM role owner.
+  S3AuditBucketPrefix:
+    Type: String
+    Description: Folder name to hold Audit logs
+    MaxLength: '1024'
+  EnableCompression:
+    Type: String
+    Description: Controls audit log compression
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  AuditRetentionPeriod:
+    Type: Number
+    Description: The retention time (in hours) that SQL Server audit records are kept on your RDS instance.
+    Default: 0
+    MinValue: 0
+    MaxValue: 840
+Conditions:
+  HasAuditBucket: !Not [!Equals  [!Ref S3AuditBucketARN, ""]]
+  UseSQLAuditOption: !And 
+      - !Not [!Equals [!Ref S3AuditBucketPrefix,""]]
+      - !Condition HasAuditBucket
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Do you want to enable SQL Server Audit log to S3?"
+        Parameters: 
+          - S3AuditBucketARN
+          - S3AuditBucketPrefix
+          - EnableCompression
+          - AuditRetentionPeriod
+Resources:   
+  rdsAuditIAMRole:
+    Type: "AWS::IAM::Role"
+    Condition: UseSQLAuditOption
+    Properties: 
+      RoleName: !Sub "awsrdstry55-S3AuditRole"
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: Allow
+            Principal: 
+              Service: 
+                - "rds.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                'aws:SourceArn': 
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:og:awsrdstry55"
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:awsrdstry55"
+      Path: /
+      Policies:
+        - PolicyName: !Sub "awsrdstry55-S3AuditRolePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  #The s3:ListAllMyBuckets action is required for verifying that the same AWS account owns both the S3 bucket and the SQL Server DB instance.
+                  #The action lists the names of the buckets in the account.
+                  - "s3:ListAllMyBuckets"
+                Resource: "*"   
+              - Effect: Allow
+                Action: 
+                  - "s3:ListBucket"
+                  - "s3:GetBucketACL"
+                  - "s3:GetBucketLocation"
+                Resource: !Ref S3AuditBucketARN
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:AbortMultipartUpload"
+                Resource: !Join ["/",[!Ref S3AuditBucketARN, !Ref S3AuditBucketPrefix, "*"]]
+ 
+Outputs:
+  AuditRoleArn:
+    Description: SQL Audit Role ARN
+    Value: !Sub "${rdsAuditIAMRole.Arn}"

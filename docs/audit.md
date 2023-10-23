@@ -17,8 +17,21 @@ For more information [Logs](https://docs.aws.amazon.com/AmazonRDS/latest/UserGui
 ## RDS DB Instance Auditing ##
 ### Key Events of Interest ###
 [RDS Event Categories and messages](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Events.Messages.html)
+
 creation 
 - Db instance created(RDS-EVENT-0005)
+- restoration of snapshot (RDS-EVENT-0043)
+
+failed
+- the DB instance creation failed (RDS-EVENT-0278)
+
+low storage
+- Allocated storage has been exhausted. Allocate additional storage to resolve (RDS-EVENT-0007)
+
+failure
+- Multi-AZ instance failover started (RDS-EVENT-0013)
+- Multi-AZ instance failover completed (RDS-EVENT-0049)
+
 
 deletion
 - Db instance deletion(RDS-EVENT-0003)
@@ -29,9 +42,13 @@ maintenance
 - engine version upgrade finished (RDS-EVENT-0268)
 - engine version upgrade failed (RDS-EVENT-0270)
 - downtime started (RDS-EVENT-0266)
+- applying off-line patches to DB instance (RDS-EVENT-0026)
+- finished applying off-line patches to DB instance (RDS-EVENT-0027)
+- database instance patched (RDS-EVENT-0047)
+
 
 read replica
-- Replication has stopped (RDS-EVENT-0045	)
+- Replication has stopped (RDS-EVENT-0045)
 - Replication for the Read Replica resumed (RDS-EVENT-0046)
 
 snapshot events (creation)
@@ -39,18 +56,31 @@ snapshot events (creation)
 - automated snapshot created (RDS-EVENT-0091)
 
 notification
-- RDS-EVENT-0196
-- RDS-EVENT-0197	
+- Db instance started (RDS-EVENT-0088 )
+- Db instance stopped (RDS-EVENT-0087)
+- starting of local snapshot copy (RDS-EVENT-0196)
+- cancelling local snapshot copy (RDS-EVENT-0190)
+- finishing of local snapshot copy (RDS-EVENT-0197)
+- starting of cross region snapshot copy (RDS-EVENT-0059)
+- finishing of cross region snapshot copy (RDS-EVENT-0060)
+- cancellation of cross region snapshot copy (RDS-EVENT-0061)
 
 
 availability 
 - instance start
 - stop
-- storage full
+- storage full threshold reached, database had been shutdown (RDS-EVENT-0221)
+- free storage capacity is low (RDS-EVENT-0222)
 
 backup 
-- backing up Db instance & finish
-- configuration change - Db instance class change, allocation storage change, 
+- backing up Db instance (RDS-EVENT-0001) 
+- finishing up of Db instance (RDS-EVENT-0002) 
+
+configuration change 
+- Db instance class change (RDS-EVENT-0014)
+- master credential change (RDS-EVENT-0016)
+- finished applying modification to allocation storage change (RDS-EVENT-0017)
+- applied change to security group (RDS-EVENT-0038)
 
 [More information](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Events.Messages.html#USER_Events.Messages.instance)
 

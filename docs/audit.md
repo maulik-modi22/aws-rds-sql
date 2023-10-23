@@ -117,3 +117,61 @@ configuration change
 
 ## AWS RDS SQL Server Auditing configuration ##
 To configure SQL Server Audit options
+[Refer AWS RDS SQL Db instance here](https://docs.aws.amazon.com/prescriptive-guidance/latest/sql-server-auditing-on-aws/auditing-rds-sql-instances.html)
+
+### Step 1: Create Server level Audit ###
+```
+CREATE SERVER AUDIT sample_audit  
+TO FILE
+        (     
+            FILEPATH = N'D:\rdsdbdata\SQLAudit\',
+            MAXSIZE = 20 MB,
+            MAX_ROLLOVER_FILES = 2147483647
+        )
+        WITH (QUEUE_DELAY = 1000, ON_FAILURE = CONTINUE);
+```
+
+Turn the Audit ON
+```
+ALTER SERVER AUDIT [sample_audit] WITH (STATE = ON)
+GO
+```
+
+### Step 2: Create server/database level audit with desired action group ###
+```
+CREATE SERVER AUDIT SPECIFICATION [sample_audit-server-spec]
+FOR SERVER AUDIT [sample_audit]
+ADD (SERVER_PRINCIPAL_CHANGE_GROUP),
+ADD (BACKUP_RESTORE_GROUP),
+ADD (SERVER_STATE_CHANGE_GROUP)
+WITH (STATE = ON)
+GO
+```
+
+### Step 3: Execute query that generates audit event ###
+```
+CREATE LOGIN maulik WITH PASSWORD = 'simple';
+```
+
+### Step 4: Query Audit ###
+```
+SELECT   object_name, [statement],file_name,host_name
+	FROM     msdb.dbo.rds_fn_get_audit_file
+	             ('D:\rdsdbdata\SQLAudit\*.sqlaudit'
+	             , default
+	             , default )
+```
+
+OR if audit log is transmitted to S3 bucket
+
+```
+SELECT   * 
+	FROM     msdb.dbo.rds_fn_get_audit_file
+	             ('D:\rdsdbdata\SQLAudit\transmitted\*.sqlaudit'
+	             , default
+	             , default )
+```
+
+![View the results of query](pics/audit/query-audit.png)
+
+

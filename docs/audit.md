@@ -16,6 +16,7 @@ For more information [Logs](https://docs.aws.amazon.com/AmazonRDS/latest/UserGui
 
 ## RDS DB Instance Auditing ##
 ### Key Events of Interest ###
+[RDS Event Categories and messages](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Events.Messages.html)
 creation 
 - Db instance created(RDS-EVENT-0005)
 
@@ -54,14 +55,17 @@ backup
 [More information](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Events.Messages.html#USER_Events.Messages.instance)
 
 ## SQL Server Auditing ##
+### Object Model ###
+![SQL Server Auditing overview](pics/audit/relationship.png)
+
 ### Key Audit Events Of Interest ###
 [When Backup/Restore command is issued](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-backup-and-restore-event-class?view=sql-server-ver16) USE ``BACKUP_RESTORE_GROUP``
 
-[When Server login is created](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-addlogin-event-class?view=sql-server-ver16) USE ``SERVER_PRINCIPAL_CHANGE_GROUP``
+[When Server principle is created, altered or dropped](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-server-principal-management-event-class?view=sql-server-ver16) USE ``SERVER_PRINCIPAL_CHANGE_GROUP``
 
 [When Server is started/stopped](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-server-starts-and-stops-event-class?view=sql-server-ver16) USE ``SERVER_STATE_CHANGE_GROUP``
 
-[Server level GDR Event](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-server-scope-gdr-event-class?view=sql-server-ver16) USE ``SERVER_OBJECT_PERMISSION_CHANGE_GROUP``
+[Server level GDR(Grant, Deny, Revoke) Event](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-server-scope-gdr-event-class?view=sql-server-ver16) USE ``SERVER_OBJECT_PERMISSION_CHANGE_GROUP``
 
 [When principles are created, altered or dropped from a database](https://learn.microsoft.com/en-us/sql/relational-databases/event-classes/audit-database-principal-management-event-class?view=sql-server-ver16) USE ``DATABASE_PRINCIPAL_CHANGE_GROUP``
 

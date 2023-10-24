@@ -120,12 +120,15 @@ To configure SQL Server Audit options
 [Refer AWS RDS SQL Db instance here](https://docs.aws.amazon.com/prescriptive-guidance/latest/sql-server-auditing-on-aws/auditing-rds-sql-instances.html)
 
 ### Step 1: Create Server level Audit ###
-[Refer Creating audits section](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html#Appendix.SQLServer.Options.Audit.Adding)
+[Refer Creating audits section](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html#Appendix.SQLServer.Options.Audit.Adding) for details
+
+Guidelines
 - Don't configure MAX_ROLLOVER_FILES or MAX_FILES.
 - For FILEPATH, specify D:\rdsdbdata\SQLAudit.
 - Don't use RDS_ as a prefix in the server audit name.
 - For MAXSIZE, specify a size between 2 MB and 50 MB.
 
+Sample Audit
 ```
 CREATE SERVER AUDIT sample_audit  
 TO FILE
@@ -160,6 +163,9 @@ CREATE LOGIN maulik WITH PASSWORD = 'simple';
 
 ### Step 4: Query Audit ###
 Refer [this link for additional info on viewing queries of Audit](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html)
+
+To find the list of `Create login audit events`, specify `action_id=CR` and `class-type=SL`
+
 ```
 SELECT  event_time,class_type,action_id, host_name, object_name, [statement],file_name,host_name
 	FROM     msdb.dbo.rds_fn_get_audit_file 

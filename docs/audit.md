@@ -120,13 +120,18 @@ To configure SQL Server Audit options
 [Refer AWS RDS SQL Db instance here](https://docs.aws.amazon.com/prescriptive-guidance/latest/sql-server-auditing-on-aws/auditing-rds-sql-instances.html)
 
 ### Step 1: Create Server level Audit ###
+[Refer Creating audits section](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html#Appendix.SQLServer.Options.Audit.Adding)
+- Don't configure MAX_ROLLOVER_FILES or MAX_FILES.
+- For FILEPATH, specify D:\rdsdbdata\SQLAudit.
+- Don't use RDS_ as a prefix in the server audit name.
+- For MAXSIZE, specify a size between 2 MB and 50 MB.
+
 ```
 CREATE SERVER AUDIT sample_audit  
 TO FILE
         (     
             FILEPATH = N'D:\rdsdbdata\SQLAudit\',
-            MAXSIZE = 20 MB,
-            MAX_ROLLOVER_FILES = 2147483647
+            MAXSIZE = 2 MB
         )
         WITH (QUEUE_DELAY = 1000, ON_FAILURE = CONTINUE);
 ```
@@ -154,25 +159,30 @@ CREATE LOGIN maulik WITH PASSWORD = 'simple';
 ```
 
 ### Step 4: Query Audit ###
+Refer [this link for additional info on viewing queries of Audit](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html)
 ```
-SELECT   object_name, [statement],file_name,host_name
-	FROM     msdb.dbo.rds_fn_get_audit_file
+SELECT  event_time,class_type,action_id, host_name, object_name, [statement],file_name,host_name
+	FROM     msdb.dbo.rds_fn_get_audit_file 
 	             ('D:\rdsdbdata\SQLAudit\*.sqlaudit'
 	             , default
-	             , default )
+	             , default) 
+    WHERE action_id in ('CR') AND class_type='SL'
+    ORDER by event_time DESC
 ```
 
 OR if audit log is transmitted to S3 bucket
 
 ```
-SELECT   * 
-	FROM     msdb.dbo.rds_fn_get_audit_file
+SELECT  event_time,class_type,action_id, host_name, object_name, [statement],file_name,host_name
+	FROM     msdb.dbo.rds_fn_get_audit_file 
 	             ('D:\rdsdbdata\SQLAudit\transmitted\*.sqlaudit'
 	             , default
-	             , default )
+	             , default) 
+    WHERE action_id in ('CR') AND class_type='SL'
+    ORDER by event_time DESC
 ```
 
-![View the results of query](pics/audit/query-audit.png)
+![View the results of query](pics/audit/query-create-login.png)
 
 To find the list of user initiated database backups taken from AWS RDS Instnace for given database `sample_db`, specify `object_name=sample_db` and `action_id=BA`
 

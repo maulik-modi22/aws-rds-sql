@@ -86,3 +86,10 @@ exec msdb.dbo.rds_backup_database
 @s3_arn_to_backup_to='arn:aws:s3:::rmaulik-dsdb/manage/maxdb76-dataFile*.bak',
 @number_of_files=5;
 ```
+
+Above execution will return `task_id` and `lifecycle` as `IN_PROGRESS` for subsequent verification of backup process completion. Please take a note of `task_id` that will be used in next query
+
+To ensure your backup is fully complete, run query substituting `task_id` returned from previous query and verify that `lifecycle` shows `SUCCESS` and `%complete` shows `100`
+```
+exec msdb.dbo.rds_task_status @task_id=<<task_id>>; 
+```

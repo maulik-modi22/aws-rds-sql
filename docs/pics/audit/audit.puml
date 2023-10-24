@@ -1,0 +1,90 @@
+@startuml
+
+object AWSRDSInstance
+object SQLServerAudit{
+  Name: "Audit1"  
+  AUDIT_GUID
+  MaxSize: 2 GB
+  MAX_ROLLOVER_FILES: 10
+  MAX_FILES: 5
+  ON_FAILURE: Continue | Shutdown
+  FilePath: "D:\RDSDATA\*"
+  State : ON | OFF
+}
+object ServerAuditSpec{
+  Name: Audit1_Server_spec
+  State: ON | OFF
+  ActionGroups: ArrayList<ServerLevelActionGroup>
+  AuditActionGroup: AuditLevelActionGroup
+}
+object AuditLevelActionGroup{
+  AUDIT_CHANGE_GROUP
+}
+object ServerLevelActionGroup{
+  SERVER_PRINCIPAL_CHANGE_GROUP
+  LOGIN_CHANGE_PASSWORD_GROUP
+  BACKUP_RESTORE_GROUP
+  FAILED_LOGIN_GROUP
+  DATABASE_CHANGE_GROUP
+  SERVER_ROLE_MEMBER_CHANGE_GROUP
+  DATABASE_PRINCIPAL_CHANGE_GROUP
+  ...
+}
+object DatabaseAuditSpec{
+ Name: "Audit1_MAS-Manage" 
+ State: ON | OFF
+ ActionSpecs: ArrayList<DatabaseActionAuditSpec>
+ ActionGroups: ArrayList<DatabaseActionGroup>
+ AuditActionGroup: AuditLevelActionGroup
+}
+object DatabaseLevelActionGroup{
+  BACKUP_RESTORE_GROUP
+  DATABASE_PRINCIPAL_CHANGE_GROUP
+  DBCC_GROUP
+  FAILED_LOGIN_GROUP
+  DATABASE_CHANGE_GROUP
+  SERVER_ROLE_MEMBER_CHANGE_GROUP
+  DATABASE_PRINCIPAL_CHANGE_GROUP
+  ...
+}
+object Database{
+  Name: MAS-Manage
+}
+object DatabaseActionAuditSpec{
+  Action: ArrayList<DatabaseLevelAuditAction>
+  Securable: Table
+  Principle: maxmanageApp
+  Class: maxvars
+}
+object Securable{
+  Table
+  View
+  Procedure
+  Schema
+  Login
+  Certificate
+  ...
+}
+object DatabaseLevelAuditAction{
+  SELECT 
+  INSERT
+  UPDATE
+  EXECUTE
+  DELETE
+}
+
+Database *-- "0..1+" DatabaseAuditSpec
+DatabaseAuditSpec o-- "1+" DatabaseLevelActionGroup
+DatabaseAuditSpec *-- "1+" DatabaseActionAuditSpec 
+DatabaseActionAuditSpec o-- "1+" Securable
+DatabaseActionAuditSpec o-- "1+" DatabaseLevelAuditAction
+AWSRDSInstance *-- "1+" SQLServerAudit
+SQLServerAudit *-- "0..1" ServerAuditSpec
+ServerAuditSpec *-- "1+" ServerLevelActionGroup
+ServerAuditSpec o-- "0..1" AuditLevelActionGroup
+DatabaseAuditSpec o-- "0..1" AuditLevelActionGroup
+SQLServerAudit *-- "0..1+" DatabaseAuditSpec
+AWSRDSInstance *-- "1+" Database
+
+
+@enduml

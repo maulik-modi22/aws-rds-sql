@@ -174,4 +174,16 @@ SELECT   *
 
 ![View the results of query](pics/audit/query-audit.png)
 
+To find the list of user initiated database backups taken from AWS RDS Instnace for given database `sample_db`, specify `object_name=sample_db` and `action_id=BA`
 
+```
+SELECT  event_time,action_id,host_name,class_type, object_name, [statement],file_name,host_name
+	FROM     msdb.dbo.rds_fn_get_audit_file 
+	             ('D:\rdsdbdata\SQLAudit\*.sqlaudit'
+	             , default
+	             , default) 
+    WHERE action_id='BA' AND object_name='sample_db'
+    ORDER by event_time DESC
+```
+
+![Backup audit actions](pics/audit/query-backup.png)

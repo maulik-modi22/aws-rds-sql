@@ -936,12 +936,12 @@ GO
 ```
 
 ### Step 4: Execute query that generates audit event ###
-- Generate Create Login event
+#### 4.1: Generate Create Login event ####
 ```
 CREATE LOGIN maulik WITH PASSWORD = 'simple';
 ```
 
-- Generate Backup event
+#### 4.2: Generate Backup event ####
 ```
   exec msdb.dbo.rds_backup_database
 @source_db_name='sample_db',
@@ -953,6 +953,7 @@ CREATE LOGIN maulik WITH PASSWORD = 'simple';
 ### Step 5: Query Audit ###
 Refer [this link for additional info on viewing queries of Audit](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html)
 
+#### 5.1: Find Create Login events ####
 To find the list of `Create login audit events`, specify `action_id=CR` and `class-type=SL` note that `class-type=SL` stands for `SQL Login` in `2.4 - Reviewing class type map`
 
 ```
@@ -978,6 +979,8 @@ SELECT  event_time,class_type,action_id, host_name, object_name, [statement],fil
 ```
 
 ![View the results of query](pics/audit/query-create-login.png)
+
+#### 5.2 Find Backup/Restore events ####
 
 To find the list of user initiated database backups taken from AWS RDS Instnace for given database `sample_db`, specify `object_name=sample_db`, `action_id=BA` and `class_type=DB`
 

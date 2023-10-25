@@ -148,7 +148,9 @@ GO
 
 
 ### Step 2: Identify action_id and class_type to be filtered
-[sys.dm_audit_actions] (https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-audit-actions-transact-sql?view=sql-server-ver16) provides `name`,`class_desc`,`containing_group_name`
+[sys.dm_audit_actions](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-audit-actions-transact-sql?view=sql-server-ver16) provides `name`,`class_desc`,`containing_group_name`
+
+
 
 #### 2.1 - Audit Configuration at Action Level ####
 ```
@@ -193,6 +195,10 @@ here, we can see important action group such as
 - `FAILED_LOGIN_GROUP`
 - `LOGIN_CHANGE_PASSWORD_GROUP`
 - `SUCCESSFUL_LOGIN_GROUP`
+
+and class_desc as
+- DATABASE
+- SERVER
 
 |action_id|name|class_desc|covering_action_name|parent_class_desc|covering_parent_action_name|configuration_level|containing_group_name|action_in_log|
 |---|---|---|---|---|---|---|---|---|
@@ -930,17 +936,24 @@ GO
 ```
 
 ### Step 4: Execute query that generates audit event ###
+- Generate Create Login event
 ```
 CREATE LOGIN maulik WITH PASSWORD = 'simple';
 ```
 
-
+- Generate Backup event
+```
+  exec msdb.dbo.rds_backup_database
+@source_db_name='sample_db',
+@s3_arn_to_backup_to='arn:aws:s3:::awsrdstryrestore3/test/sample_db4-dataFile*.bak',
+@number_of_files=5;
+```
 
 
 ### Step 5: Query Audit ###
 Refer [this link for additional info on viewing queries of Audit](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.Audit.html)
 
-To find the list of `Create login audit events`, specify `action_id=CR` and `class-type=SL`
+To find the list of `Create login audit events`, specify `action_id=CR` and `class-type=SL` note that `class-type=SL` stands for `SQL Login` in `2.4 - Reviewing class type map`
 
 ```
 SELECT  event_time,class_type,action_id, host_name, object_name, [statement],file_name,host_name
@@ -966,15 +979,15 @@ SELECT  event_time,class_type,action_id, host_name, object_name, [statement],fil
 
 ![View the results of query](pics/audit/query-create-login.png)
 
-To find the list of user initiated database backups taken from AWS RDS Instnace for given database `sample_db`, specify `object_name=sample_db` and `action_id=BA`
+To find the list of user initiated database backups taken from AWS RDS Instnace for given database `sample_db`, specify `object_name=sample_db`, `action_id=BA` and `class_type=DB`
 
 ```
-SELECT  event_time,action_id,host_name,class_type, object_name, [statement],file_name,host_name
+SELECT  event_time,class_type,action_id, host_name, object_name, [statement],file_name,host_name
 	FROM     msdb.dbo.rds_fn_get_audit_file 
 	             ('D:\rdsdbdata\SQLAudit\*.sqlaudit'
 	             , default
-	             , default) 
-    WHERE action_id='BA' AND object_name='sample_db'
+	             , default) f
+    WHERE action_id='BA' AND class_type='DB' AND object_name='sample_db'
     ORDER by event_time DESC
 ```
 

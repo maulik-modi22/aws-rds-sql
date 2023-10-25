@@ -124,7 +124,7 @@ To configure SQL Server Audit options
 
 Guidelines
 - Don't configure MAX_ROLLOVER_FILES or MAX_FILES.
-- For FILEPATH, specify D:\rdsdbdata\SQLAudit.
+- For FILEPATH, specify D:\rdsdbdata\SQLAudit\
 - Don't use RDS_ as a prefix in the server audit name.
 - For MAXSIZE, specify a size between 2 MB and 50 MB.
 - Do not specify RETENTION PERIOD in option group for Audit if audit log is not required to be stored on AWS RDS instance
@@ -995,3 +995,35 @@ SELECT  event_time,class_type,action_id, host_name, object_name, [statement],fil
 ```
 
 ![Backup audit actions](pics/audit/query-backup.png)
+
+### Step 6: Add more audit events and capture them ###
+
+#### 6.1: Turn off Server level audit spec ####
+Before we can Alter Server level audit spec, it needs to be turned OFF
+
+Use this query with `STATE=OFF`
+```
+ALTER SERVER AUDIT SPECIFICATION [sample_audit-server-spec] WITH (STATE=OFF)
+```
+
+#### 6.2 Alter spec to include additional action groups ####
+
+#### 6.3 Query Successful and failed login ####
+For successful login events, use `class_type=LX` and `action_id=LGIS`
+For failed login events, use `class_type=LX`     and `action_id=LGIF`
+
+[External resource for Audit events](https://sqlquantumleap.com/reference/server-audit-filter-values-for-action_id/)
+
+Query below will list successful and failed login events by user `maulik`
+```
+SELECT   event_time,class_type,action_id, host_name,[client_ip], [statement],file_name,host_name
+	FROM     msdb.dbo.rds_fn_get_audit_file 
+                 ('D:\rdsdbdata\SQLAudit\*.sqlaudit'
+	             , default
+	             , default ) f
+    WHERE class_type='LX'
+    AND action_id IN ('LGIS','LGIF') 
+    AND server_principal_name='maulik'
+```
+
+![Login Audit Events](pics/audit/query-login.png)

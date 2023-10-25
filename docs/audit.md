@@ -287,7 +287,8 @@ and class_desc as
 |UDAG|USER_DEFINED_AUDIT_GROUP|SERVER|NULL|NULL|NULL|Group|USER_DEFINED_AUDIT_GROUP|0|
 
 #### 2.3 - No configuration level ####
-Not sure if any of these events are required to be audited
+Observe important events with abberviation `LGIS` and `LGIF` for `LOGIN SUCCEEDED` and `LOGIN FAILED` in the table below 
+
 ```
 select * from sys.dm_audit_actions where configuration_level IS NULL order by containing_group_name
 
@@ -1007,14 +1008,26 @@ ALTER SERVER AUDIT SPECIFICATION [sample_audit-server-spec] WITH (STATE=OFF)
 ```
 
 #### 6.2 Alter spec to include additional action groups ####
+Here, we will add two more action groups - `SUCCESSFUL_LOGIN_GROUP` and `FAILED_LOGIN_GROUP`
+
+```
+ALTER SERVER AUDIT SPECIFICATION [sample_audit-server-spec]
+FOR SERVER AUDIT [sample_audit]
+ADD (SERVER_PRINCIPAL_CHANGE_GROUP),
+ADD (BACKUP_RESTORE_GROUP),
+ADD (SERVER_STATE_CHANGE_GROUP),
+ADD (SUCCESSFUL_LOGIN_GROUP),--Successful login
+ADD (FAILED_LOGIN_GROUP)--failed login
+GO
+```
 
 #### 6.3 Query Successful and failed login ####
-For successful login events, use `class_type=LX` and `action_id=LGIS`
+For successful login events, use `class_type=LX` and `action_id=LGIS`; Name of action is taken from section `2.3 - No configuration level`
+
 For failed login events, use `class_type=LX`     and `action_id=LGIF`
 
-[External resource for Audit events](https://sqlquantumleap.com/reference/server-audit-filter-values-for-action_id/)
+Query below will list successful and failed login events by user `maulik` querying against `server_principal_name`
 
-Query below will list successful and failed login events by user `maulik`
 ```
 SELECT   event_time,class_type,action_id, host_name,[client_ip], [statement],file_name,host_name
 	FROM     msdb.dbo.rds_fn_get_audit_file 

@@ -1021,7 +1021,18 @@ ADD (FAILED_LOGIN_GROUP)--failed login
 GO
 ```
 
-#### 6.3 Query Successful and failed login ####
+#### 6.3 Turn ON audit spec ####
+
+```
+ALTER SERVER AUDIT SPECIFICATION [sample_audit-server-spec] WITH (STATE=on)
+```
+
+#### 6.4 Generate Successful and Failed Login event ####
+
+- [x] Do a login to server with correct credentials
+- [x] Do a login to server with incorrect credentials
+
+#### 6.5 Query Successful and failed login ####
 For successful login events, use `class_type=LX` and `action_id=LGIS`; Name of action is taken from section `2.3 - No configuration level`
 
 For failed login events, use `class_type=LX`     and `action_id=LGIF`

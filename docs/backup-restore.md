@@ -78,15 +78,18 @@ GO
 ![Verification](pics/backup-restore/3-verify.png)
 
 ## Backup database from AWS RDS ##
-It is recommended to turn `ON` backup compression to save storage space and reduce the overall time to backup
+
+### Turn ON S3 Backup compression ###
+It is recommended to turn `ON` backup compression to save storage space and reduce the overall time to backup by running this query
 
 ```
 exec rdsadmin..rds_set_configuration 'S3 backup compression', 'true';
 ```
-To, see the effect of coompression, refer this screenshot showing difference in backup size and timeframe
+To, see the effect of coompression, refer this screenshot showing difference in backup size and overall time to backup
 
 ![BackupwithOutCompression](pics/backup-restore/4-backup-from-rds.png)
 
+### Split backup into multiple files ###
 To ease the transfer of large size backup, you can split the database backup into multiple files, you can leverage ``number_of_files`` parameter to the ``rds_backup_database`` procedure, also specify
 ``@type`` parameter with value ``Full``
 

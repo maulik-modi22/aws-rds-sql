@@ -1,6 +1,8 @@
 # User Initaited Backup-Restore #
 As AWS RDS for SQL does not grant file system access to the user, only option we have is to use AWS S3 as the intermediate store.
 
+AWS Frequently updates their documentation, [read here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Procedural.Importing.html#SQLServer.Procedural.Importing.Native.Compression)
+
 ## Pre-requisites ##
 Steps in [Backup-Restore](iam.md) section of IAM has been executed and AWS service role has been created
 

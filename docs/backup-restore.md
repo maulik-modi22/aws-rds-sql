@@ -78,12 +78,23 @@ GO
 ![Verification](pics/backup-restore/3-verify.png)
 
 ## Backup database from AWS RDS ##
-In case you want to split the database backup into multiple files, you can leverage ``number_of_files`` parameter to the ``rds_backup_database`` procedure
+It is recommended to turn `ON` backup compression to save storage space and reduce the overall time to backup
+
+```
+exec rdsadmin..rds_set_configuration 'S3 backup compression', 'true';
+```
+To, see the effect of coompression, refer this screenshot showing difference in backup size and timeframe
+
+![BackupwithOutCompression](pics/backup-restore/4-backup-from-rds.png)
+
+To ease the transfer of large size backup, you can split the database backup into multiple files, you can leverage ``number_of_files`` parameter to the ``rds_backup_database`` procedure, also specify
+``@type`` parameter with value ``Full``
 
 ```
 exec msdb.dbo.rds_backup_database
 @source_db_name='maxdb76',
-@s3_arn_to_backup_to='arn:aws:s3:::rmaulik-dsdb/manage/maxdb76-dataFile*.bak',
+@s3_arn_to_backup_to='arn:aws:s3:::rmaulik-dsdb/manage/maximo-compress-part*.bak',
+@type = 'Full',
 @number_of_files=5;
 ```
 
@@ -93,3 +104,8 @@ To ensure your backup is fully complete, run query substituting `task_id` return
 ```
 exec msdb.dbo.rds_task_status @task_id=<<task_id>>; 
 ```
+
+When backup is `split into multiple files` using `@number_of_files=5`, it will appear as follows in `S3`
+
+![BackupwithCompressionAndParts](pics/backup-restore/5-backup-from-rdswithpart.png)
+

@@ -199,7 +199,7 @@ Metadata:
           - SubnetId
           - WhiteListCIDR
       - Label:
-          default: "Do you require AWS Managed Automated Backups (Point in time recovery)?"
+          default: "Do you require AWS Managed Automated Backups (Point in time recovery) - Mandatory for Multi-AZ instances?"
         Parameters: 
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
@@ -277,6 +277,11 @@ Resources:
         rds.fips: !Ref FIPS
         rds.tls10: disabled
         rds.tls11: disabled
+        rds.rc4: disabled
+        rds.curve25519: disabled
+        rds.3des168: disabled
+        rds.diffie-hellman: enabled
+        rds.diffie-hellman-min-key-bit-length: 1024	
         user connections: !Ref MaxConnections
         #rds.tls12:
   rdsOptionGroup:
@@ -429,4 +434,10 @@ Outputs:
      Value: !Ref rdsDBParameterGroup
    BackupRestoreRoleArn:
      Description: Backup restore Role ARN
-     Value: !Sub "${backupRestoreIAMRole.Arn}"
+     Value: !GetAtt backupRestoreIAMRole.Arn 
+   CertificateBundleInfo:
+     Description: Certificate details for TLS connection from your application
+     Value: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html#UsingWithRDS.SSL.CertificatesAllRegions
+   CertificateDirectUrl:
+     Description: Direct Certificate URL
+     Value: !Sub "https://truststore.pki.rds.amazonaws.com/${AWS::Region}/${AWS::Region}-bundle.pem"

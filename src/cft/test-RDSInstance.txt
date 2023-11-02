@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SQLServerBackupRestore
+Parameters:
+  DBInstanceID:
+    Default: test
+    Description: My database instance
+    Type: String
+    MinLength: '1'
+    MaxLength: '63'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: >-
+      Must begin with a letter and must not end with a hyphen or contain two
+      consecutive hyphens.
+  DBName:
+    Default: test
+    Description: My database
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
+  DBInstanceClass:
+    Default: db.m6i.large
+    Description: DB instance class
+    Type: String
+    ConstraintDescription: Must select a valid DB instance type.
+  DBAllocatedStorage:
+    Default: '50'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '20'
+    MaxValue: '65536'
+    ConstraintDescription: must be between 20 and 65536 GiB.
+  DBUsername:
+    NoEcho: 'true'
+    Default: test
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Default: Tes16ith
+    Description: Password MySQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  OptionGroupName:
+    Default: test
+    Description: The Name of option group
+    Type: String
+  BucketName:
+    Description: Enter the bucket name
+    Type: String
+Resources:
+  SQLServerOptionGroup:
+    Type: 'AWS::RDS::OptionGroup'
+    DependsOn: Role
+    Properties:
+      EngineName: sqlserver-se
+      MajorEngineVersion: '15.00'
+      OptionGroupDescription: SQLServerBackupRestore
+      OptionGroupName: !Ref OptionGroupName
+      OptionConfigurations:
+        - OptionName: SQLSERVER_BACKUP_RESTORE
+          OptionSettings:
+            - Value: !Ref Role
+              Name: IAM_ROLE_ARN
+  SQLDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Retain
+    Properties:
+      DBInstanceIdentifier:
+        Ref: DBInstanceID
+      LicenseModel: license-included
+      Engine: sqlserver-se
+      EngineVersion: 15.00.4322.2.v1
+      MultiAZ: false
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: '50'
+      MasterUsername:
+        Ref: DBUsername
+      MasterUserPassword:
+        Ref: DBPassword
+      PubliclyAccessible: 'false'
+      OptionGroupName: !Ref SQLServerOptionGroup
+      BackupRetentionPeriod: '1'
+  Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - rds.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                "aws:SourceArn": 
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${DBInstanceID}"
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:og:${OptionGroupName}"
+      Path: /
+      Policies:
+        - PolicyName: testpolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                - "s3:GetObjectAttributes"
+                - "s3:GetObject"
+                - "s3:PutObject" 
+                - "s3:ListMultipartUploadParts"
+                - "s3:AbortMultipartUpload"
+                Resource: 
+                - !Sub arn:aws:s3:::${BucketName}/*
+              -   Effect: Allow
+                  Action:
+                  - "s3:ListBucket"
+                  - "s3:GetBucketLocation"
+                  Resource: 
+                  - !Sub arn:aws:s3:::${BucketName}
+                  

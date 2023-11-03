@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation template IAM Role for Enhanced monitoring
+Conditions:
+  UseEnhancedMonitoring: !Equals [true, true]
+Resources:   
+  rdsEnhancedMonitoringRole:
+    Description: Enhanced monitoring role for AWS RDS Instance, refer Refer https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonRDSEnhancedMonitoringRole.html
+    Type: AWS::IAM::Role
+    Condition: UseEnhancedMonitoring
+    Properties:
+      AssumeRolePolicyDocument:
+      #Reference: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.Enabling.html#USER_Monitoring.OS.Enabling.Prerequisites.creating-role-manually
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "monitoring.rds.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                'aws:SourceArn': 
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:test"
+      Path: "/"
+      ManagedPolicyArns: 
+      - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+Outputs:
+  EnhancedMonitoringRoleArn:
+    Description: Enhanced monitoring Role ARN
+    Value: !GetAtt rdsEnhancedMonitoringRole.Arn

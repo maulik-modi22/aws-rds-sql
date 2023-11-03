@@ -114,3 +114,15 @@ When backup is `split into multiple files` using `@number_of_files=5`, it will a
 
 ![BackupwithCompressionAndParts](pics/backup-restore/5-backup-from-rdswithpart.png)
 
+### To restore multifile backup ###
+Observe, all backup files to be restored here begin with a prefix `maximo-compress-part`
+
+```
+exec msdb.dbo.rds_restore_database
+@restore_db_name='sampledb',
+@type='FULL',
+@with_norecovery=0,
+@s3_arn_to_restore_from='arn:aws:s3:::rmaulik-dsdb/manage/maximo-compress-part*';
+```
+
+

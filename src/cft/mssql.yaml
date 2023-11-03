@@ -13,9 +13,6 @@ Parameters:
   #BackupRestoreIAMServiceRoleARN:
    # Type: String
     #Description: ARN of User Initiated Backup - AWS RDS Service Role with access read/write permission to S3 Bucket to perform backup/restore
-  EnhancedMonitoringRoleARN:
-    Type: String
-    Description: ARN of AWS RDS Enhanced monitoring role, required only if EnhancedMonitoringInterval > 0
   EnhancedMonitoringInterval:
     Type: Number
     Description:  Granularity(seconds) when Enhanced Monitoring metrics are collected for the DB instance, specify 0 to disable monitoring
@@ -178,10 +175,7 @@ Conditions:
   UseStorageEncryption: !And 
       - !Not [!Equals [!Ref EncryptionKMSKeyARN,""]]
       - !Condition HasStorageEncryption
-  HasEnhancedMonitoring: !Not [!Equals [!Ref EnhancedMonitoringInterval, 0]]
-  UseEnhancedMonitoring: !And 
-      - !Not [!Equals [!Ref EnhancedMonitoringRoleARN,""]]
-      - !Condition HasEnhancedMonitoring
+  UseEnhancedMonitoring: !Not [!Equals [!Ref EnhancedMonitoringInterval, 0]]
   HasBackupBucket: !Not [!Equals  [!Ref S3BucketBackupARN, ""]]
   UseExistingDatabaseBackup: !And 
       - !Not [!Equals [!Ref S3BucketBackupFolder,""]]
@@ -204,14 +198,13 @@ Metadata:
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
       - Label:
-          default: "Do you have existing database backup to be restored in AWS RDS?"
+          default: "Provide S3 bucket to restore existing backup into RDS OR move database backup between environment (Must be in the same region as AWS RDS)"
         Parameters: 
           - S3BucketBackupARN
           - S3BucketBackupFolder
       - Label:
           default: "Do you want to enable Enhanced Monitoring?"
         Parameters: 
-          - EnhancedMonitoringRoleARN
           - EnhancedMonitoringInterval
       - Label:
           default: "Performance Insights"
@@ -287,23 +280,27 @@ Resources:
   rdsOptionGroup:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-optiongroup.html
     Type: AWS::RDS::OptionGroup
+    DependsOn:
+      - "rdsBackupRestoreIAMRole"
     Properties:
       OptionGroupName: !Ref InstanceName
       EngineName: !Ref Engine
       MajorEngineVersion: !Ref EngineMajorVersion
       OptionGroupDescription: !Join [ " ", ["Option group for ", !Ref InstanceName]]
       #Circular dependnecy error#
-      #OptionConfigurations:
-       # - OptionName: SQLSERVER_BACKUP_RESTORE
-        #  OptionSettings:
-         #   - Name: IAM_ROLE_ARN
-          #    Value: !GetAtt backupRestoreIAMRole.Arn               
+      OptionConfigurations:
+        - OptionName: SQLSERVER_BACKUP_RESTORE
+          OptionSettings:
+           - Name: IAM_ROLE_ARN
+             Value: !GetAtt rdsBackupRestoreIAMRole.Arn
   rdsDatabaseInstance:
     #https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html
     Type: AWS::RDS::DBInstance
     DependsOn:      
       - "rdsSecurityGroup"
       - "rdsDBSubnetGroup"
+      - "rdsEnhancedMonitoringIAMRole"
+      - "rdsBackupRestoreIAMRole"
       - "rdsOptionGroup"
       - "rdsDBParameterGroup"
     Properties: 
@@ -341,7 +338,7 @@ Resources:
       #MasterUserSecret: MasterUserSecret
       #MaxAllocatedStorage: 30
       MonitoringInterval: !If [ UseEnhancedMonitoring, !Ref EnhancedMonitoringInterval, 0]
-      MonitoringRoleArn: !If [ UseEnhancedMonitoring, !Ref EnhancedMonitoringRoleARN, !Ref 'AWS::NoValue' ]
+      MonitoringRoleArn: !If [ UseEnhancedMonitoring, !GetAtt rdsEnhancedMonitoringIAMRole.Arn, !Ref 'AWS::NoValue' ]
       MultiAZ: !Ref MultiAZ
       NetworkType: IPV4
       OptionGroupName: !Ref rdsOptionGroup
@@ -371,11 +368,8 @@ Resources:
   # "arn:aws:rds:Region:my_account_ID:db:db_instance_identifier",
   # "arn:aws:rds:Region:my_account_ID:og:option_group_name"
   # Pusedoparameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html
-  backupRestoreIAMRole:
+  rdsBackupRestoreIAMRole:
     Type: "AWS::IAM::Role"
-    DependsOn:
-      - "rdsDatabaseInstance"
-      - "rdsOptionGroup"
     Condition: UseExistingDatabaseBackup
     Properties: 
       RoleName: !Sub "${InstanceName}-S3BackupRestoreIAMRole"
@@ -391,8 +385,8 @@ Resources:
             Condition:
               StringEquals:
                 'aws:SourceArn': 
-                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:og:${rdsOptionGroup}"
-                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${rdsDatabaseInstance}"
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:og:${InstanceName}"
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${InstanceName}"
       Path: /
       Policies:
         - PolicyName: !Sub "${InstanceName}-S3BackupRestorePolicy"
@@ -413,6 +407,29 @@ Resources:
                   - "s3:AbortMultipartUpload"
                 Resource: !Join ["/",[!Ref S3BucketBackupARN, !Ref S3BucketBackupFolder, "*"]]
     
+  rdsEnhancedMonitoringIAMRole:
+    Description: Enhanced monitoring role for AWS RDS Instance, refer Refer https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonRDSEnhancedMonitoringRole.html
+    Type: AWS::IAM::Role
+    Condition: UseEnhancedMonitoring
+    Properties:
+      AssumeRolePolicyDocument:
+      #Reference: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.Enabling.html#USER_Monitoring.OS.Enabling.Prerequisites.creating-role-manually
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "monitoring.rds.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                'aws:SourceArn': 
+                - !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${InstanceName}"
+      Path: "/"
+      ManagedPolicyArns: 
+      - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole  
+
 Outputs:
    SQLDatabaseEndpoint:
      Description: Database endpoint
@@ -433,11 +450,15 @@ Outputs:
      Description: DbParameterGroup ARN
      Value: !Ref rdsDBParameterGroup
    BackupRestoreRoleArn:
-     Description: Backup restore Role ARN
-     Value: !GetAtt backupRestoreIAMRole.Arn 
+     Description: Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Procedural.Importing.html#SQLServer.Procedural.Importing.Native.Finish.Restore.Syntax
+     Value: !GetAtt rdsBackupRestoreIAMRole.Arn 
    CertificateBundleInfo:
      Description: Certificate details for TLS connection from your application
      Value: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html#UsingWithRDS.SSL.CertificatesAllRegions
    CertificateDirectUrl:
      Description: Direct Certificate URL
      Value: !Sub "https://truststore.pki.rds.amazonaws.com/${AWS::Region}/${AWS::Region}-bundle.pem"
+   JDBCConnectionString:
+     Description: Refer https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver16 
+     Value: !Sub "jdbc:sqlserver://${rdsDatabaseInstance.Endpoint.Address}:${rdsDatabaseInstance.Endpoint.Port};encrypt=true;trustServerCertificate=false;loginTimeout=30;applicationName=maximomanage;"
+    

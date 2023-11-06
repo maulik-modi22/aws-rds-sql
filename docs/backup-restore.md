@@ -6,8 +6,47 @@ AWS Frequently updates their documentation, [read here](https://docs.aws.amazon.
 ## Pre-requisites ##
 Steps in [Backup-Restore](iam.md) section of IAM has been executed and AWS service role has been created
 
-## Restore database into AWS RDS ##
-### Upload database backup into AWS S3 ###
+## Take database backup from the source Environment ##
+AWS RDS Multi-AZ production grade deployment requires backups taken in `FULL` recovery mode, Please ensure database is set to `FULL` recovery mode before taking backup
+
+### Ensure Source database Recovery model is Full ##
+
+Use this query to know recovery_model of current database
+```
+SELECT name, recovery_model_desc
+FROM sys.databases
+WHERE name = 'maxdb76';
+GO
+```
+
+If `recovery_model` is other than `FULL`, Execute this query to change recovery model to `FULL`
+
+```
+ALTER DATABASE [maxdb76]
+SET RECOVERY FULL;
+```
+
+### Take compressed backup And Split Backup into multiple files ###
+
+Sometimes size of database backup can be more than 100 GB which can be challanging to transfer over the wire due to constraint in `bandwidth upload speed` and connection interruption, hence it is recommended to leverage `SPLITTING backup into multiple files` and use `COMPRESSION`
+
+```
+BACKUP DATABASE [<database_name>]
+TO 
+DISK=N'C:\BACKUP\maxdb76_1.bak',
+DISK=N'C:\BACKUP\maxdb76_2.bak',
+DISK=N'C:\BACKUP\maxdb76_3.bak',
+DISK=N'C:\BACKUP\maxdb76_4.bak',
+DISK=N'C:\BACKUP\maxdb76_5.bak',
+WITH 
+    COPY_ONLY,
+    INIT, 
+    CHECKSUM, 
+    STATS=10, 
+    COMPRESSION (ALGORITHM = QAT_DEFLATE);
+```
+
+## Transfer database backup into AWS S3 ##
 There are multiple ways to get database backup into AWS S3. Appropriate option can be used depending on Size of database backup, Upload internet speed, in-transit data protection requirements.
 
 Simplest options are to use AWS Console or AWS S3 api to upload database backup into AWS S3.
@@ -22,7 +61,7 @@ aws s3 cp "maxdb76.bak" "s3://rmaulik-dsdb/manage/" --storage-class ONEZONE_IA
 
 Advanced options are to use over VPN, trust establishment between AWS Accounts. Some examples are - AWS Private Link over VPN and Amazon S3 File Gateway.
 
-### Restore to AWS RDS ###
+## Restore to AWS RDS ##
 You can run this query to restore database backup into AWS RDS
 Sample Query
 

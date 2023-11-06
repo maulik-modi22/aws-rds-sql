@@ -4,7 +4,11 @@ As AWS RDS for SQL does not grant file system access to the user, only option we
 AWS Frequently updates their documentation, [read here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Procedural.Importing.html#SQLServer.Procedural.Importing.Native.Compression)
 
 ## Pre-requisites ##
-Steps in [Backup-Restore](iam.md) section of IAM has been executed and AWS service role has been created
+AWS RDS SQL must have `SQLSERVER_BACKUP_RESTORE` `option settings` configured in `Option group`
+
+![Backup-restore option setting](pics/backup-restore/0-optiongroup-options.png)
+
+ [More info here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.BackupRestore.html)
 
 ## Take database backup from the source Environment ##
 AWS RDS Multi-AZ production grade deployment requires backups taken in `FULL` recovery mode, Please ensure database is set to `FULL` recovery mode before taking backup

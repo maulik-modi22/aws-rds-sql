@@ -34,6 +34,12 @@ SELECT SERVERPROPERTY('productversion') as version
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/3-verify-version.png)
 
+[Microsoft - SQL Server releases](https://learn.microsoft.com/en-us/troubleshoot/sql/releases/download-and-install-latest-updates) and [AWS RDS - SQL Server version availability](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html)
+
+[All SQl Server 2019 build versions](https://learn.microsoft.com/en-us/troubleshoot/sql/releases/sqlserver-2019/build-versions)
+
+[All SQL Server 2022 build versions](https://learn.microsoft.com/en-us/troubleshoot/sql/releases/sqlserver-2022/build-versions)
+
 ## Verify encrypted connection ##
 ```
 select
@@ -59,6 +65,7 @@ SERVERPROPERTY('collation')  as collation
 ```
 It would be similar to this:
 ![MS SQL Version and Edition](pics/post-instance/10-instance-collation.png)
+
 
 
 ## Verify location of Data file, log file and backup file ##

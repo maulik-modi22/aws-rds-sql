@@ -13,6 +13,19 @@ AWS RDS SQL must have `SQLSERVER_BACKUP_RESTORE` `option settings` configured in
 ## Take database backup from the source Environment ##
 AWS RDS Multi-AZ production grade deployment requires backups taken in `FULL` recovery mode, Please ensure database is set to `FULL` recovery mode before taking backup
 
+### Capture database instance level properties ###
+
+Get Collation details [collation details](https://codingsight.medium.com/collation-in-sql-server-a5fbfc3b5f9)
+
+```
+SELECT SERVERPROPERTY('Collation')
+```
+
+Get Timezone of the server, [more info](https://learn.microsoft.com/en-us/sql/t-sql/functions/current-timezone-transact-sql?view=sql-server-ver16)
+```
+SELECT CURRENT_TIMEZONE ( )
+```
+
 ### Ensure Source database Recovery model is Full ##
 
 Use this query to know recovery_model of current database
@@ -34,6 +47,8 @@ SET RECOVERY FULL;
 
 Sometimes size of database backup can be more than 100 GB which can be challanging to transfer over the wire due to constraint in `bandwidth upload speed` and connection interruption, hence it is recommended to leverage `SPLITTING backup into multiple files` and use `COMPRESSION`
 
+If processor supports then `COMPRESSION (ALGORITHM = QAT_DEFLATE)` can be specified or else leave just `COMPRESSION`
+
 ```
 BACKUP DATABASE [<database_name>]
 TO 
@@ -41,14 +56,43 @@ DISK=N'C:\BACKUP\maxdb76_1.bak',
 DISK=N'C:\BACKUP\maxdb76_2.bak',
 DISK=N'C:\BACKUP\maxdb76_3.bak',
 DISK=N'C:\BACKUP\maxdb76_4.bak',
-DISK=N'C:\BACKUP\maxdb76_5.bak',
+DISK=N'C:\BACKUP\maxdb76_5.bak'
 WITH 
     COPY_ONLY,
     INIT, 
     CHECKSUM, 
     STATS=10, 
-    COMPRESSION (ALGORITHM = QAT_DEFLATE);
+    COMPRESSION
 ```
+
+
+
+### Inspecting the Backup ###
+
+```
+RESTORE HEADERONLY FROM DISK=N'C:\Softwares\backup\eam76.bak'
+```
+
+OR
+
+```
+RESTORE HEADERONLY FROM 
+DISK=N'C:\Softwares\backup\maxdb76_1.bak',
+DISK=N'C:\BACKUP\maxdb76_2.bak',
+DISK=N'C:\BACKUP\maxdb76_3.bak',
+DISK=N'C:\BACKUP\maxdb76_4.bak',
+DISK=N'C:\BACKUP\maxdb76_5.bak'
+```
+
+Look for important fields such as 
+
+- [x] `RecoveryModel` MUST be `FULL`
+- [x] `BackupTypeDescription` WILL be `Database`
+- [x] `CompatabilityLevel`: `150`:`SQL Server 2019` OR `160`:`SQL Server 2022` Refer [more info](https://learn.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql-compatibility-level?view=sql-server-ver16)
+- [x] `Collation`: `SQL_Latin1_General_CP1_CI_AS`
+- [x] `SoftwareVersionMajor`: `16`:`SQL Server 2022` OR `15`:`SQL Server 2019`
+`SoftwareVersionMinor`:
+- [x] `SoftwareVersionBuild`: Refer [SQL 2019 build versions](https://learn.microsoft.com/en-us/troubleshoot/sql/releases/sqlserver-2019/build-versions) or [SQL 2022 build versions](https://learn.microsoft.com/en-us/troubleshoot/sql/releases/sqlserver-2022/build-versions)
 
 ## Transfer database backup into AWS S3 ##
 There are multiple ways to get database backup into AWS S3. Appropriate option can be used depending on Size of database backup, Upload internet speed, in-transit data protection requirements.

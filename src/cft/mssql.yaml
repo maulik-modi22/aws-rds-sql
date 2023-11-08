@@ -27,7 +27,7 @@ Parameters:
       - 60
   PerformanceInsightsRetention:
     Type: Number
-    Description: The number of days to retain Performance Insights data; 7 days retention is free, other acceptable values are Number of months X 31
+    Description: The number of days to retain Performance Insights data; 7 days retention is free; Approx cost is 2 USD/vCPU/month; other acceptable values are Number of months X 31; Refer https://aws.amazon.com/rds/performance-insights/pricing/ for more details
     Default: 7
     AllowedValues:
          - 7
@@ -135,7 +135,7 @@ Parameters:
     MinValue: 0
     MaxValue: 32767
   AutomatedBackupRetentionPeriod:
-    Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info; You can set the backup retention period of a multi-AZ DB cluster to between 1 and 35 days.
+    Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info; You can set the backup retention period of a multi-AZ DB cluster to between 1 and 35 days. For cost calculation, refer https://aws.amazon.com/blogs/database/demystifying-amazon-rds-backup-storage-costs/ and https://aws.amazon.com/rds/sqlserver/pricing/#Backup_storage_costs
     Type: Number
     Default: 0
     MinValue: 0
@@ -445,10 +445,9 @@ Outputs:
      #https://docs.aws.amazon.com/cli/latest/reference/rds/describe-db-parameter-groups.html
      Description: DbParameterGroup Name
      Value: !Ref rdsDBParameterGroup
-   DBParameterGroupArn:
-     #https://docs.aws.amazon.com/cli/latest/reference/rds/describe-db-parameter-groups.html
-     Description: DbParameterGroup ARN
-     Value: !Ref rdsDBParameterGroup
+   EnhancedMonitoringRoleArn:
+     Description: Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.Viewing.html
+     Value: !GetAtt rdsEnhancedMonitoringIAMRole.Arn
    BackupRestoreRoleArn:
      Description: Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Procedural.Importing.html#SQLServer.Procedural.Importing.Native.Finish.Restore.Syntax
      Value: !GetAtt rdsBackupRestoreIAMRole.Arn 
@@ -462,3 +461,7 @@ Outputs:
      Description: Refer https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver16 
      Value: !Sub "jdbc:sqlserver://${rdsDatabaseInstance.Endpoint.Address}:${rdsDatabaseInstance.Endpoint.Port};encrypt=true;trustServerCertificate=false;loginTimeout=30;applicationName=maximomanage;"
     
+
+    exec msdb.dbo.rds_restore_database
+@restore_db_name='maxdb76',
+@s3_arn_to_restore_from='arn:aws:s3:::aws-rds-customer-onboarding/db/eam76.bak';

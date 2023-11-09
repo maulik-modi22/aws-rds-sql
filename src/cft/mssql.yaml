@@ -137,9 +137,9 @@ Parameters:
   MaxConnections:
     Type: Number
     Description: Maximum number of database connections, 0:Unlimited, Divide instnace Memory(Gb) by 0.01172 to derive max connections Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
-    Default: 0
+    Default: 1365
     MinValue: 0
-    MaxValue: 1365
+    MaxValue: 8000
   AutomatedBackupRetentionPeriod:
     Description: Specify duration(Days) for automated backup Retention Period(1-35), refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html for more info; You can set the backup retention period of a multi-AZ DB cluster to between 1 and 35 days. For cost calculation, refer https://aws.amazon.com/blogs/database/demystifying-amazon-rds-backup-storage-costs/ and https://aws.amazon.com/rds/sqlserver/pricing/#Backup_storage_costs
     Type: Number

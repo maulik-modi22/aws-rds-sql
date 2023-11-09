@@ -136,8 +136,8 @@ Parameters:
       - false
   MaxConnections:
     Type: Number
-    Description: Maximum number of database connections, 0:Unlimited, Divide instnace Memory(Gb) by 0.01172 to derive max connections Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
-    Default: 1365
+    Description: Maximum number of database connections, 0:Unlimited, Divide instnace Memory(Gb) by 0.012 to derive max connections Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
+    Default: 1333
     MinValue: 0
     MaxValue: 32767
   AutomatedBackupRetentionPeriod:

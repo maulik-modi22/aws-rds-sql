@@ -68,12 +68,18 @@ Parameters:
       - io1
       - io2
     Description: Storage type
-  StorageSize:
+  InitialAllocatedStorageSize:
     Default: 30
     Type: Number
-    Description: Storage Size In GB (Minimum 30 GB)
+    Description: Initial allocated Storage Size in GB (Minimum 30 GB), based on capacity sizing
     MinValue: 30
-    MaxValue: 5000
+    MaxValue: 1000
+  MaximumAllocatedStorageSize:
+    Default: 250
+    Type: Number
+    Description: Maximum storage threshold for autoscaling in GB (Recommendation- set it to at-least 26% more than InitialAllocatedStorageSize); Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.ModifyingAutoscaling for more info
+    MinValue: 40
+    MaxValue: 1000
   StorageIOPS:
     Default: 3000
     Type: Number
@@ -130,8 +136,8 @@ Parameters:
       - false
   MaxConnections:
     Type: Number
-    Description: Maximum number of database connections, 0:Unlimited, Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
-    Default: 0
+    Description: Maximum number of database connections, 0:Unlimited, Divide instnace Memory(Gb) by 0.012 to derive max connections Refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.MaxConnections
+    Default: 1333
     MinValue: 0
     MaxValue: 32767
   AutomatedBackupRetentionPeriod:
@@ -222,7 +228,8 @@ Metadata:
           - InstanceType
           - InstanceName
           - StorageType
-          - StorageSize
+          - InitialAllocatedStorageSize
+          - MaximumAllocatedStorageSize
           - StorageIOPS
           - StorageThroughput
           - MaxConnections
@@ -304,7 +311,7 @@ Resources:
       - "rdsOptionGroup"
       - "rdsDBParameterGroup"
     Properties: 
-      AllocatedStorage: !Ref StorageSize
+      AllocatedStorage: !Ref InitialAllocatedStorageSize
       AllowMajorVersionUpgrade: FALSE
       #AssociatedRoles: DBInstanceRole
       AutoMinorVersionUpgrade: FALSE
@@ -336,7 +343,8 @@ Resources:
       MasterUsername: !Ref DatabaseUsername
       MasterUserPassword: !Ref DatabasePassword
       #MasterUserSecret: MasterUserSecret
-      #MaxAllocatedStorage: 30
+      #Setting max allocated storage will enable storage auto scaling
+      MaxAllocatedStorage: !Ref MaximumAllocatedStorageSize
       MonitoringInterval: !If [ UseEnhancedMonitoring, !Ref EnhancedMonitoringInterval, 0]
       MonitoringRoleArn: !If [ UseEnhancedMonitoring, !GetAtt rdsEnhancedMonitoringIAMRole.Arn, !Ref 'AWS::NoValue' ]
       MultiAZ: !Ref MultiAZ

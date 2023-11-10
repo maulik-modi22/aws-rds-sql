@@ -1,4 +1,4 @@
-# Understanding AWS RDS SQL Server upgrade #
+# Understanding AWS RDS SQL Server Engine upgrade #
 ## SQL Server - Major Version & Support Dates ##
 At present `MAS 8.11` supports `SQL 2019` and
 `MAS 9.0` is expected to add support of `SQL 2022`
@@ -82,7 +82,7 @@ Refer [SQL Server versions supported in RDS](https://docs.aws.amazon.com/AmazonR
 
 ![Current engine version](pics/upgrade/2-current-engine-version.png)
 
-### Finding if new major version is available ###
+### Is there an upgrade available? ###
 #### GUI Approach ####
 
 Frm AWS RDS Console > Recommendations menu, we can see upgrade notification when new version is available for upgrade.
@@ -95,8 +95,12 @@ Clicking `Schedule` will bring up confirmation prompt asking to apply `version u
 Here's screenshot showing upcoming `maintenance window` 
 ![Maintenance-window](pics/upgrade/5-maintenance-window.png)
 
+Confirming the option will show it as `pending upgrade`
+![Pending upgrade](pics/upgrade/6-pending-upgrade.png)
+
 ### CLI Approach ###
 
+#### Find If there are upgrade versions available? ####
 Run this CLI command and look for `ValidUpgradeTarget` in the output
 ```
 aws rds describe-db-engine-versions --engine sqlserver-se --engine-version 15.00.4322.2.v1 
@@ -124,3 +128,21 @@ Only `ValidUpgradeTarget` section is shown in the output for brevity; As we can 
                 }
             ],
 ```
+
+#### Perform upgrade ####
+Applying `--apply-immediately` flag will immediately start the upgrade
+NOT applying `--apply-immediately` flag will schedule upgrade during maintenance window
+
+```
+aws rds modify-db-instance --db-instance-identifier "awsrdssqltry120" --engine-version "15.00.4335.1.v1" --apply-immediately
+
+```
+
+### Observe Upgrade process  ###
+#### Is Upgrade going on? ####
+If AWS RDS SQL instance is undergoing an upgrade, status will change to `upgrading`
+![Upgrading status](pics/upgrade/7-upgrading.png)
+
+#### Upgrade events ####
+Events tab shows events occurred during upgrade process, it took roughly `15 minutes` to upgrade `single-AZ` instance
+![Upgrade events](pics/upgrade/8-upgrade-events.png)

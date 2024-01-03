@@ -150,6 +150,10 @@ Parameters:
     Description: Preferred 30 Minutes window in UTC e.g. 22:00-22:30
     Type: String
     Default: 22:00-22:30
+  MaintainanceWindow:
+    Description: Weekly Preferred 30 minutes window in UTC during which maintainance can occur ddd:hh24:mi-ddd:hh24:mi, refer https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow
+    Type: String
+    Default: Sun:22:55-Sun:23:55
   DatabaseUsername:
     AllowedPattern: "[a-zA-Z0-9]+"
     ConstraintDescription: must contain only alphanumeric characters.
@@ -468,8 +472,3 @@ Outputs:
    JDBCConnectionString:
      Description: Refer https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver16 
      Value: !Sub "jdbc:sqlserver://${rdsDatabaseInstance.Endpoint.Address}:${rdsDatabaseInstance.Endpoint.Port};encrypt=true;trustServerCertificate=false;loginTimeout=30;applicationName=maximomanage;"
-    
-
-    exec msdb.dbo.rds_restore_database
-@restore_db_name='maxdb76',
-@s3_arn_to_restore_from='arn:aws:s3:::aws-rds-customer-onboarding/db/eam76.bak';

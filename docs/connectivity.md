@@ -10,3 +10,10 @@
 `tnc <<IP | DNS>> -port <<MSSQL Specific Port>>`
 
 https://www.redhat.com/en/blog/running-microsoft-sql-server-2019-openshift-using-red-hat-openshift-container-storage
+
+## Screenshots ##
+
+![connectivity test](pics/connectivity/1-connectivity-test.png)
+
+![route tables](pics/connectivity/2-route-tables.png)
+

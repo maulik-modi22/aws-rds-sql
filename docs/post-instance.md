@@ -3,6 +3,9 @@ Verify that Security Group has been successfully created white listing provided 
 
 ![CIDR Range](pics/post-instance/1-securitygroup.png)
 
+Also, add necessary inbound rules if you are connecting over VPN
+![VPN CIDR Range](pics/post-instance/1-1-vpn-inbound-rules.png)
+
 ## Database Connection ##
 Download [Azure Data Studio](https://learn.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver16&tabs=redhat-install%2Credhat-uninstall) for connecting to AWS RDS Instance
 

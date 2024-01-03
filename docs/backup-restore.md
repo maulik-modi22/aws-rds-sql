@@ -138,6 +138,7 @@ FROM sys.databases
 WHERE name NOT IN
 ('master','msdb','tempdb','model','rdsadmin')
 ```
+![Database State and Recovery model](pics/backup-restore/6-state_recovery_model.png)
 
 ### Verification ###
 Run some queries to verify database is restored correctly, querable and usable.

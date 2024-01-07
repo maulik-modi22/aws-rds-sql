@@ -16,7 +16,18 @@ https://www.redhat.com/en/blog/running-microsoft-sql-server-2019-openshift-using
 ![route tables](pics/connectivity/2-route-tables.png)
 
 ### Connectivity from the cluster ###
+CloudPak4Data Platform connection allows connectivity test from the cluster
 ![connectivity test](pics/connectivity/1-connectivity-test.png)
+
+### JDBC Validation ###
+As MAS requires JDBC connection string, construct it using this syntax
+`jdbc:sqlserver://<RDSEndpoint>:<RDSPort>;encrypt=true;databaseName=<DbName>`
+
+```
+jdbc:sqlserver://sas05neuce2.cux6dwui9qfk.eu-central-1.rds.amazonaws.com:1433;encrypt=true;databaseName=eamdb76;
+```
+
+![JDBCTest](pics/connectivity/4-jdbc-mssql.png)
 
 ### SSL Certificate related ###
 Locate AWS RDS PEM file corresponding to the region of your AWS RDS instance

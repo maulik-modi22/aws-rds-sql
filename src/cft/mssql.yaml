@@ -208,6 +208,10 @@ Metadata:
           - AutomatedBackupRetentionPeriod
           - AutomatedBackupWindow
       - Label:
+          Default: "Specify Maintainance Window"
+        Parameters:
+          - MaintainanceWindow
+      - Label:
           default: "Provide S3 bucket to restore existing backup into RDS OR move database backup between environment (Must be in the same region as AWS RDS)"
         Parameters: 
           - S3BucketBackupARN
@@ -358,7 +362,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: !Ref PerformanceInsightsRetention
       Port: "1433"
       PreferredBackupWindow: !Ref AutomatedBackupWindow
-      #PreferredMaintenanceWindow: String
+      PreferredMaintenanceWindow: !Ref MaintainanceWindow
       PubliclyAccessible: !Ref PubliclyAccessible
       StorageEncrypted: !Ref EncryptStorage
       KmsKeyId: !If [ UseStorageEncryption, !Ref EncryptionKMSKeyARN, !Ref 'AWS::NoValue' ]

@@ -36,6 +36,10 @@ Extract certificate block corresponding to the certificate authority used in AWS
 
 ![SSL Certificate](pics/connectivity/3-rds-ssl-cert-maximo-manage.png)
 
+### Post Activation ###
+After MAS Manage is successfully activated, check System info showing SQL server engine version
+![AWS RDS SQL Connectivity](pics/connectivity/5-db.png)
+
 ### Bounce Maxinst ###
  oc scale --replicas=0 deployment/awstrn-rel-main-manage-maxinst
 

@@ -12,12 +12,28 @@
 https://www.redhat.com/en/blog/running-microsoft-sql-server-2019-openshift-using-red-hat-openshift-container-storage
 
 ## Screenshots ##
-### Security group - Inbound rules ###
+### Security group - Inbound rules (VPN) ###
 ![route tables](pics/connectivity/2-route-tables.png)
 
 ### Connectivity from the cluster ###
 CloudPak4Data Platform connection allows connectivity test from the cluster
 ![connectivity test](pics/connectivity/1-connectivity-test.png)
+
+### Connectivity test from client machine ###
+To do a connectivity test from client machine, 
+Find Ip address of RDS Instance using `nslookup` as shown below
+
+```
+nslookup <RDSEndpoint>
+```
+![nslookup](pics/connectivity/7-rds-ip.png)
+
+Once IP Address is known, do a `netcat` on port `1433` shown below
+
+```
+nc -vnz <RDSEndpointIPAddress> 1433  
+```
+![netcat](pics/connectivity/8-netcat.png)
 
 ### JDBC Validation ###
 As MAS requires JDBC connection string, construct it using this syntax

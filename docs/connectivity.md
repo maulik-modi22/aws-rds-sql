@@ -28,7 +28,7 @@ nslookup <RDSEndpoint>
 ```
 ![nslookup](pics/connectivity/7-rds-ip.png)
 
-Once IP Address is known, do a `netcat` on port `1433` shown below
+Once IP Address is known, do a `netcat` on port `1433` shown below; It will show connection succeeded if connectivity can be established.
 
 ```
 nc -vnz <RDSEndpointIPAddress> 1433  
@@ -147,6 +147,8 @@ Execute validate crypto key
 ```
 ./validatecryptokey.sh 
 ```
+
+
 
 Crypto error log
 ```
@@ -355,10 +357,20 @@ BMXAA6820I - ValidateCryptoKey completed without errors. Fri Nov 17 02:00:42 GMT
 bash-4.4$ 
 ```
 
-#### Crypto keys####
+#### Crypto keys ####
 ```
 MXE_SECURITY_CRYPTOX_KEY
 MXE_SECURITY_CRYPTO_KEY
 MXE_SECURITY_OLD_CRYPTOX_KEY
 MXE_SECURITY_OLD_CRYPTO_KEY
+```
+
+#### In case Crypto keys are lost ####
+Go to `Maxinst` pod, navigate to
+```
+cd /opt/IBM/SMP/maximo/tools/maximo
+```
+Run reset crypto key
+```
+resetcryptocryptox.sh
 ```

@@ -106,19 +106,19 @@ Parameters:
     - sqlserver-ee
   EngineMajorVersion:
     Type: String
-    Default: '15.00'
+    Default: '16.00'
     AllowedValues:
-    - '15.00'
+    - '16.00'
   EngineVersion:
     Type: String
-    Default: 15.00.4345.5.v1
+    Default: 16.00.4150.1.v1
     Description: Enter AWS RDS Engine Version, Use valid RDS API EngineVersion from https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport and Microsoft release cadence here - https://learn.microsoft.com/en-us/troubleshoot/sql/releases/sqlserver-2019/build-versions
   EngineFamily:
     Type: String
-    Default: sqlserver-se-15.0
+    Default: sqlserver-se-16.0
     AllowedValues:
-    - sqlserver-se-15.0
-    - sqlserver-ee-15.0
+    - sqlserver-se-16.0
+    - sqlserver-ee-16.0
   Collation:
     Type: String
     Default: SQL_Latin1_General_CP1_CI_AS
@@ -282,6 +282,8 @@ Resources:
       Family: !Ref EngineFamily
       Parameters:
         rds.force_ssl: 1
+        rds.password_complexity_enabled: 1
+        rds.password_lockout_threshold: 5
         rds.fips: !Ref FIPS
         rds.tls10: disabled
         rds.tls11: disabled

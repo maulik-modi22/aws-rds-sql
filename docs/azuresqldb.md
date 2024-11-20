@@ -30,4 +30,16 @@ export TARGET_DB_PASSWORD=
 sqlpackage.exe /Action:Import /sf:"${SOURCE_BACPAC_FILE}" /tsn:"${TARGET_RDS_ENDPOINT}" /tdn:"${TARGET_RDS_DATABASE}" /tu:"${TARGET_DB_USER}" /tp:"${TARGET_DB_PASSWORD}" /TargetTrustServerCertificate:true 
 ```
 
+## Restore BACPAC in powershell
+```
+$SOURCE_BACPAC_FILE= "C:\Users\Administrator\Downloads\maxdb76.bacpac"
+$TARGET_RDS_ENDPOINT= "rdsmssql01.czo3pe0z5oxn.us-east-1.rds.amazonaws.com"
+$TARGET_RDS_DATABASE= "maximo86"
+$TARGET_DB_USER= ""
+$TARGET_DB_PASSWORD= ""
+
+sqlpackage /Action:Import /sf:$SOURCE_BACPAC_FILE /tsn:$TARGET_RDS_ENDPOINT /tdn:$TARGET_RDS_DATABASE /tu:$TARGET_DB_USER /tp:$TARGET_DB_PASSWORD /TargetTrustServerCertificate:true 
+
+```
+
 

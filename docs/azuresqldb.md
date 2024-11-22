@@ -1,3 +1,16 @@
+## Source Environment
+### Download SqlPackage in source environment
+https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage-download?view=sql-server-ver16#installation-file-download-alternative
+
+### Export database
+```
+SqlPackage /Action:Export /TargetFile:"d:\maxdb76.bacpac" /SourceConnectionString:"Server=localhost\SQLEXPRESS;Database=maxdb76;Trusted_Connection=True;TrustServerCertificate=True" /p:CommandTim
+eout=120 /p:TempDirectoryForTableData="d:\temp" /p:CompressionOption=Maximum /p:VerifyExtraction=True
+```
+
+```
+```
+
 ## Install SqlPackage on windows
 ```
 winget install Microsoft.DotNet.SDK.8

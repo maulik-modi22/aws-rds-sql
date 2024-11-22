@@ -6,6 +6,9 @@ winget install Microsoft.DotNet.SDK.8
 dotnet tool install -g microsoft.sqlpackage
 ```
 
+## Export a BACPAC file - Azure SQL Database
+https://learn.microsoft.com/en-us/azure/azure-sql/database/database-export?view=azuresql
+
 ## Install SqlPackage on Mac
 Refer steps here - https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage-download?view=sql-server-ver16#macos
 

@@ -22,6 +22,8 @@ eout=120 /p:TempDirectoryForTableData="d:\temp" /p:CompressionOption=Maximum /p:
 ```
 
 ## Restore BACPAC in AWS RDS
+https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage?view=sql-server-ver16
+
 ```
 export SOURCE_BACPAC_FILE=
 export TARGET_RDS_ENDPOINT=

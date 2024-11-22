@@ -1,6 +1,6 @@
 ## Install SqlPackage on windows
 ```
-winget install Microsoft.DotNet.Runtime.8
+winget install Microsoft.DotNet.SDK.8
 ```
 ```
 dotnet tool install -g microsoft.sqlpackage

@@ -337,7 +337,7 @@ Resources:
       DBSnapshotIdentifier: ''
       DBSubnetGroupName: !Ref rdsDBSubnetGroup
       DeleteAutomatedBackups: FALSE
-      DeletionProtection: FALSE
+      DeletionProtection: TRUE
       #Domain: String
       #DomainIAMRoleName: String
       #https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.SQLServer.html
